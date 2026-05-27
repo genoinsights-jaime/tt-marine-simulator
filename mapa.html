@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa Transit Times — Customizer Identidad Visual · T&T Marine</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400;600;700;800&family=Raleway:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Mozilla+Headline:wght@300;400;500;600;700&family=Special+Gothic+Condensed+One&family=Sulphur+Point:wght@300;400;700&family=Roboto:wght@300;400;500;700&family=DM+Sans:wght@300;400;500;700&family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* ===== Brand tokens (palette-swappable) ===== */
+  --color-bg-primary: #001237;
+  --color-bg-surface: #00236B;
+  --color-bg-rgb: 0, 18, 55;
+  --color-bg-surface-rgb: 0, 35, 107;
+  --color-accent-primary: #28AAE0;
+  --color-accent-primary-rgb: 40, 170, 224;
+  --color-accent-secondary: #7FCBED;
+  --color-accent-tertiary: #177AA3;
+  --color-text-primary: #FFFFFF;
+  --color-text-muted: #D4ECF9;
+
+  /* Font tokens */
+  --font-display-bold: 'Montserrat', sans-serif;
+  --font-display-light: 'Montserrat', sans-serif;
+  --font-body: 'Raleway', sans-serif;
+
+  /* Backwards-compatible aliases used throughout existing CSS */
+  --navy-900: var(--color-bg-primary);
+  --navy-700: var(--color-bg-surface);
+  --cyan-700: var(--color-accent-tertiary);
+  --cyan-500: var(--color-accent-primary);
+  --cyan-300: var(--color-accent-secondary);
+  --gray-500: #8B97A8;
+
+  /* Opacity of the per-label background rect on the map (0 = transparent) */
+  --label-bg-alpha: 0.85;
+}
+
+/* Legend SVG follows palette: dots and lines use --color-accent-primary */
+#leg svg circle:first-child { fill: var(--color-accent-primary); }
+#leg svg line { stroke: var(--color-accent-primary); }
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;height:100%;background:var(--navy-900);}
+body{display:flex;align-items:center;justify-content:center;min-height:100vh;}
+
+#app{
+  width:100%;max-width:1600px;
+  aspect-ratio:16/9;
+  position:relative;overflow:hidden;
+  font-family:var(--font-body);
+  background:var(--navy-900);
+  user-select:none;
+}
+
+@media(max-width:900px){#app{aspect-ratio:unset;height:100vh;}}
+
+canvas{position:absolute;top:0;left:0;will-change:transform;}
+#tint{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(var(--color-bg-surface-rgb),.18);pointer-events:none;}
+#svgl{position:absolute;top:0;left:0;pointer-events:none;will-change:transform;}
+
+#title,#lang,#zoom,#panel,#leg{position:absolute;z-index:20;}
+
+#title{
+  left:14px;top:14px;
+  background:rgba(var(--color-bg-rgb),.93);
+  border-left:3px solid var(--cyan-500);
+  border-radius:2px 6px 6px 2px;
+  padding:10px 15px 12px;
+  backdrop-filter:blur(8px);
+  box-shadow:0 4px 24px rgba(0,0,0,.55);
+}
+.t-eyebrow{font-family:var(--font-display-bold);color:var(--cyan-500);font-size:7px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:5px;}
+.t-h1{font-family:var(--font-display-bold);color:#fff;font-size:19px;font-weight:800;line-height:1.15;}
+.t-hint{font-family:var(--font-body);color:rgba(255,255,255,.35);font-size:8px;margin-top:7px;}
+
+#lang{
+  top:14px;right:296px;
+  display:flex;gap:2px;
+  background:rgba(var(--color-bg-rgb),.88);
+  border:1px solid rgba(var(--color-accent-primary-rgb),.25);
+  border-radius:20px;padding:3px;
+  backdrop-filter:blur(6px);
+}
+.lb{font-family:var(--font-display-bold);font-size:8px;font-weight:700;letter-spacing:1px;padding:3px 9px;border:none;border-radius:16px;cursor:pointer;transition:all .15s;}
+.lb.on{background:var(--cyan-500);color:var(--navy-700);}
+.lb:not(.on){background:transparent;color:rgba(255,255,255,.45);}
+
+#panel{
+  right:14px;top:14px;width:272px;
+  max-height:calc(100% - 28px);overflow-y:auto;
+  background:rgba(var(--color-bg-rgb),.93);
+  border:1px solid rgba(var(--color-accent-primary-rgb),.2);
+  border-left:3px solid var(--cyan-500);
+  border-radius:2px 6px 6px 2px;
+  backdrop-filter:blur(10px);
+  box-shadow:0 4px 24px rgba(0,0,0,.55);
+}
+#panel::-webkit-scrollbar{width:2px;}
+#panel::-webkit-scrollbar-thumb{background:rgba(var(--color-accent-primary-rgb),.35);}
+
+#panel-title{padding:10px 13px 8px;font-family:var(--font-display-bold);font-size:10px;font-weight:700;letter-spacing:2px;color:rgba(var(--color-accent-primary-rgb),.85);text-transform:uppercase;border-bottom:1px solid rgba(var(--color-accent-primary-rgb),.15);}
+#tabs{display:none;}
+.tab{flex:1;padding:8px 4px;font-family:var(--font-display-bold);font-size:7.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;border:none;cursor:pointer;transition:all .15s;}
+.tab.on{color:var(--cyan-500);background:rgba(var(--color-accent-primary-rgb),.07);border-bottom:2px solid var(--cyan-500);}
+.tab:not(.on){color:var(--gray-500);background:transparent;}
+
+#pcont{padding:11px 13px;}
+.pname{font-family:var(--font-display-bold);color:#fff;font-size:13px;font-weight:700;margin-bottom:3px;display:none;}
+.ppill{display:none;margin-bottom:6px;}
+.pill{display:inline-block;background:rgba(var(--color-accent-primary-rgb),.1);border:1px solid rgba(var(--color-accent-primary-rgb),.3);color:var(--cyan-500);font-family:var(--font-display-bold);font-size:6.5px;font-weight:700;letter-spacing:1.5px;padding:2px 7px;border-radius:10px;text-transform:uppercase;}
+.pempty{font-family:var(--font-body);color:rgba(255,255,255,.35);font-size:9.5px;line-height:1.7;}
+.pdata{display:none;}
+.shdr{font-family:var(--font-display-bold);color:var(--cyan-500);font-size:7px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin:9px 0 5px;padding-bottom:4px;border-bottom:1px solid rgba(var(--color-accent-primary-rgb),.15);}
+.shdr:first-child{margin-top:0;}
+.rrow{display:flex;justify-content:space-between;align-items:center;padding:4px 7px;margin-bottom:3px;background:rgba(212,236,249,.05);border-left:2px solid rgba(var(--color-accent-primary-rgb),.4);border-radius:0 3px 3px 0;}
+.rto{font-family:var(--font-body);color:rgba(255,255,255,.8);font-size:10.5px;}
+.rt{font-family:var(--font-display-bold);color:var(--cyan-500);font-size:10px;font-weight:700;white-space:nowrap;flex-shrink:0;margin-left:6px;}
+.drow{display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.dto{font-family:var(--font-body);color:rgba(255,255,255,.55);font-size:10.5px;}
+.dval{font-family:var(--font-display-bold);color:rgba(255,255,255,.85);font-size:10.5px;font-weight:700;white-space:nowrap;flex-shrink:0;margin-left:6px;}
+#rmode{display:none;}
+.rlbl{font-family:var(--font-display-bold);color:var(--gray-500);font-size:7px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:3px;display:block;}
+.rsel{width:100%;padding:5px 7px;background:rgba(0,12,40,.8);border:1px solid rgba(var(--color-accent-primary-rgb),.22);border-radius:4px;color:#fff;font-family:var(--font-body);font-size:9.5px;margin-bottom:8px;outline:none;cursor:pointer;}
+.rsel:focus{border-color:var(--cyan-500);}
+.rsel option{background:#001237;color:#fff;}
+#rbtn{width:100%;padding:7px;background:var(--cyan-500);border:none;border-radius:4px;color:var(--navy-700);font-family:var(--font-display-bold);font-size:9px;font-weight:700;letter-spacing:1px;cursor:pointer;margin-bottom:10px;transition:background .15s;}
+#rbtn:hover{background:var(--cyan-700);color:#fff;}
+#rresult{display:none;}
+.rcrd{padding:8px 10px;background:rgba(var(--color-accent-primary-rgb),.07);border-left:3px solid var(--cyan-500);border-radius:0 4px 4px 0;margin-bottom:5px;}
+.rclbl{font-family:var(--font-display-bold);color:var(--gray-500);font-size:6.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2px;}
+.rcval{font-family:var(--font-display-bold);color:var(--cyan-300);font-size:16px;font-weight:700;}
+.nodata{font-family:var(--font-body);color:rgba(255,255,255,.35);font-size:9px;line-height:1.6;}
+/* multi-select indicator */
+.mcount{display:inline-block;margin-left:6px;background:rgba(var(--color-accent-primary-rgb),.18);border:1px solid rgba(var(--color-accent-primary-rgb),.35);color:var(--cyan-500);font-family:var(--font-display-bold);font-size:6px;font-weight:700;letter-spacing:1px;padding:1px 5px;border-radius:8px;text-transform:uppercase;vertical-align:middle;}
+.mtip{font-family:var(--font-body);color:rgba(var(--color-accent-primary-rgb),.5);font-size:7.5px;margin-bottom:7px;line-height:1.5;}
+
+#leg{
+  left:14px;bottom:14px;
+  background:rgba(var(--color-bg-rgb),.90);border:1px solid rgba(var(--color-accent-primary-rgb),.15);
+  border-radius:6px;padding:9px 12px;backdrop-filter:blur(6px);
+}
+.lhdr{font-family:var(--font-display-bold);color:var(--cyan-500);font-size:8.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px;}
+.lrow{display:flex;align-items:center;gap:7px;margin-bottom:4px;}
+.lrow:last-child{margin-bottom:0;}
+.llbl{font-family:var(--font-body);color:rgba(255,255,255,.55);font-size:9.5px;}
+
+/* ===== Customizer sidebar ===== */
+#customizer-toggle {
+  position: fixed; top: 50%; right: 0; transform: translateY(-50%);
+  background: #1A1D24; color: #fff; border: 0;
+  padding: 14px 12px; border-radius: 10px 0 0 10px;
+  font: 600 12px/1.2 'Inter', system-ui, sans-serif; letter-spacing: 0.4px;
+  cursor: pointer; z-index: 10000;
+  box-shadow: -4px 0 16px rgba(0,0,0,0.35);
+  writing-mode: vertical-rl; text-orientation: mixed;
+  transition: background 0.2s;
+}
+#customizer-toggle:hover { background: #28AAE0; }
+#customizer-toggle.hidden { display: none; }
+#customizer-panel {
+  position: fixed; top: 0; right: -380px;
+  width: 340px; height: 100vh;
+  background: #14171D; color: #fff;
+  padding: 28px 24px 24px; box-sizing: border-box;
+  box-shadow: -8px 0 24px rgba(0,0,0,0.45);
+  transition: right 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10001; overflow-y: auto;
+  font: 14px/1.5 'Inter', system-ui, sans-serif;
+}
+#customizer-panel.open { right: 0; }
+#customizer-panel .cust-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;
+}
+#customizer-panel h3 { margin: 0; font-size: 16px; font-weight: 700; letter-spacing: 0.3px; }
+#customizer-close {
+  background: transparent; color: #888; border: 0; cursor: pointer;
+  font-size: 24px; line-height: 1; padding: 4px 10px; border-radius: 6px; transition: all 0.15s;
+}
+#customizer-close:hover { background: #2A2D33; color: #fff; }
+#customizer-panel .cust-sub { color: #888; font-size: 12px; margin: 0 0 24px 0; }
+#customizer-panel label {
+  display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.6px;
+  text-transform: uppercase; color: #999; margin: 18px 0 8px;
+}
+#customizer-panel select {
+  width: 100%; padding: 11px 12px; border-radius: 8px;
+  background: #1F2329; color: #fff; border: 1px solid #2D3138;
+  font: 14px/1.3 'Inter', system-ui, sans-serif; cursor: pointer;
+  appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%23999' d='M6 8L0 0h12z'/></svg>");
+  background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px;
+}
+#customizer-panel select:hover { border-color: #28AAE0; }
+#customizer-panel select:focus { outline: 2px solid #28AAE0; outline-offset: 1px; }
+#customizer-panel .swatch-row { display: flex; gap: 4px; margin: 8px 0 0 0; }
+#customizer-panel .swatch { flex: 1; height: 16px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.06); }
+#restore-original {
+  width: 100%; margin-top: 28px; padding: 11px 14px;
+  background: transparent; color: #28AAE0;
+  border: 1px solid #28AAE0; border-radius: 8px;
+  font: 600 13px/1.2 'Inter', sans-serif; cursor: pointer; transition: all 0.15s;
+}
+#restore-original:hover { background: #28AAE0; color: #14171D; }
+#customizer-panel .info {
+  margin-top: 24px; padding-top: 18px; border-top: 1px solid #24272D;
+  font-size: 11px; color: #666; line-height: 1.5;
+}
+
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="mc"></canvas>
+  <div id="tint"></div>
+  <svg id="svgl"></svg>
+
+  <div id="title">
+    <div class="t-eyebrow">T&amp;T MARINE MARITIME AGENCY</div>
+    <div class="t-h1" id="tl1">TRANSIT TIMES &amp;</div>
+    <div class="t-h1" id="tl2">DISTANCES</div>
+  </div>
+
+
+  <div id="panel">
+    <div id="panel-title">REFERENCE DATA</div>
+    <div id="tabs">
+      <button class="tab on" id="t0" onclick="sm('explore')">Explore</button>
+      <button class="tab"    id="t1" onclick="sm('route')">Route</button>
+    </div>
+    <div id="pcont">
+      <div id="emode">
+        <div class="shdr">Transit Times · From Recalada</div>
+        <div class="rrow"><span class="rto">Zona Común</span><span class="rt">8–10 hrs</span></div>
+        <div class="rrow"><span class="rto">Buenos Aires / Dock Sud</span><span class="rt">11–13 hrs</span></div>
+        <div class="rrow"><span class="rto">Campana / Zárate</span><span class="rt">16–18 hrs</span></div>
+        <div class="rrow"><span class="rto">Nueva Palmira</span><span class="rt">18 hrs</span></div>
+        <div class="rrow"><span class="rto">San Nicolás / Ramallo / V. Constitución</span><span class="rt">24–28 hrs</span></div>
+        <div class="rrow"><span class="rto">Rosario / San Lorenzo</span><span class="rt">28–34 hrs</span></div>
+        <div class="rrow"><span class="rto">Necochea</span><span class="rt">24–30 hrs</span></div>
+        <div class="rrow"><span class="rto">Bahía Blanca</span><span class="rt">42–48 hrs</span></div>
+        <div class="shdr">Distances · From Recalada</div>
+        <div class="drow"><span class="dto">Zona Común</span><span class="dval">187 Km / 101 NM</span></div>
+        <div class="drow"><span class="dto">Buenos Aires / Dock Sud</span><span class="dval">239 Km / 129 NM</span></div>
+        <div class="drow"><span class="dto">Campana / Zárate</span><span class="dval">308 Km / 166 NM</span></div>
+        <div class="drow"><span class="dto">Nueva Palmira</span><span class="dval">314 Km / 170 NM</span></div>
+        <div class="drow"><span class="dto">San Nicolás / Ramallo / V. Constitución</span><span class="dval">531 Km / 287 NM</span></div>
+        <div class="drow"><span class="dto">Rosario / San Lorenzo</span><span class="dval">633 Km / 342 NM</span></div>
+        <div class="drow"><span class="dto">Necochea</span><span class="dval">648 Km / 350 NM</span></div>
+        <div class="drow"><span class="dto">Bahía Blanca</span><span class="dval">889 Km / 480 NM</span></div>
+      </div>
+      <div id="rmode">
+        <span class="rlbl" id="lf">FROM</span>
+        <select class="rsel" id="rf"></select>
+        <span class="rlbl" id="lt">TO</span>
+        <select class="rsel" id="rt2"></select>
+        <button id="rbtn" onclick="sr()">Show Route</button>
+        <div id="rresult"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="leg">
+    <div class="lhdr" id="lh">Legend</div>
+    <div class="lrow"><svg width="14" height="14"><circle cx="7" cy="7" r="5.5" fill="#28AAE0" opacity=".9"/><circle cx="7" cy="7" r="2.2" fill="white"/></svg><span class="llbl" id="ll1">Port</span></div>
+    <div class="lrow"><svg width="22" height="9"><line x1="0" y1="4.5" x2="22" y2="4.5" stroke="#28AAE0" stroke-width="1.5" stroke-dasharray="5,3"/></svg><span class="llbl" id="ll3">Active route</span></div>
+
+  </div>
+</div>
+
+<script>
+// Colors read from CSS vars so palette swaps propagate to canvas/SVG
+function readColors(){
+  const cs=getComputedStyle(document.documentElement);
+  const g=v=>cs.getPropertyValue(v).trim();
+  return {
+    navy900: g('--color-bg-primary')   || '#001237',
+    navy700: g('--color-bg-surface')   || '#00236B',
+    cyan700: g('--color-accent-tertiary') || '#177AA3',
+    cyan500: g('--color-accent-primary')  || '#28AAE0',
+    cyan300: g('--color-accent-secondary')|| '#7FCBED',
+    gray500: '#8B97A8',
+    fontBold: (g('--font-display-bold') || "'Montserrat',sans-serif").replace(/^['"]|['"]$/g,''),
+    fontBody: (g('--font-body')        || "'Raleway',sans-serif").replace(/^['"]|['"]$/g,''),
+    labelBgAlpha: parseFloat(g('--label-bg-alpha') || '0.85'),
+  };
+}
+function hexToRgb(h){const c=h.replace('#','').trim();return{r:parseInt(c.slice(0,2),16),g:parseInt(c.slice(2,4),16),b:parseInt(c.slice(4,6),16)};}
+function rgbaOf(hex,a){const r=hexToRgb(hex);return `rgba(${r.r},${r.g},${r.b},${a})`;}
+let C = readColors();
+const TX={
+  en:{tl1:'TRANSIT TIMES &',tl2:'DISTANCES',hint:'Click port to select · click again to deselect · drag to pan',t0:'Explore',t1:'Route',empty:'Click any port on the map to view transit times and distances to other ports in the network.',mtip:'%d ports selected — showing last. Click any line to toggle it.',lf:'FROM',lt:'TO',rbtn:'Show Route',sp:'Select port...',sh1:'Transit Times',sh2:'Distances',nodata:'No transit data available for this port.',noroute:'No direct route data between these ports.',lh:'Legend',ll1:'Port',ll3:'Active route',pt:{h:'Regional Hub',p:'Major Port',s:'Secondary Port'}},
+  es:{tl1:'TIEMPOS DE TRÁNSITO Y',tl2:'DISTANCIAS',hint:'Click para seleccionar · click de nuevo para deseleccionar · arrastrá para mover',t0:'Explorar',t1:'Ruta',empty:'Hacé click en cualquier puerto del mapa para ver tiempos de tránsito y distancias.',mtip:'%d puertos seleccionados — mostrando el último. Clickeá una línea para ocultarla.',lf:'DESDE',lt:'HASTA',rbtn:'Ver Ruta',sp:'Seleccioná un puerto...',sh1:'Tiempos de Tránsito',sh2:'Distancias',nodata:'No hay datos de tránsito para este puerto todavía.',noroute:'No hay datos de ruta directa entre estos puertos.',lh:'Referencias',ll1:'Puerto',ll3:'Ruta activa',pt:{h:'Hub Regional',p:'Puerto Principal',s:'Puerto Secundario'}}
+};
+
+const PORTS=[
+  {id:'diamante',       name:'Diamante',                  lat:-32.07,     lng:-60.63,    t:'s'},
+  // Rosario / San Lorenzo grouped — single point at San Lorenzo (reference port)
+  {id:'rosario',        name:'Rosario / San Lorenzo',     lat:-32.74,     lng:-60.73,    t:'p'},
+  // San Nicolás / Villa Constitución / Ramallo grouped — single point at San Nicolás
+  {id:'san_nicolas',    name:'San Nicolás / Villa Constitución / Ramallo', lat:-33.34, lng:-60.23, t:'s'},
+  {id:'san_pedro',      name:'San Pedro',                 lat:-33.68,     lng:-59.67,    t:'s', labelLeft:true, labelOffsetY:8},
+  {id:'fray_bentos',    name:'Fray Bentos',               lat:-33.13,     lng:-58.30,    t:'s'},
+  {id:'nueva_palmira',  name:'Nueva Palmira',             lat:-33.87,     lng:-58.43,    t:'s'},
+  {id:'campana',        name:'Campana / Zárate',          lat:-34.17,     lng:-58.93,    t:'s'},
+  // Buenos Aires / Dock Sud grouped — single point, Dock Sud absorbed
+  {id:'buenos_aires',   name:'Buenos Aires / Dock Sud',   lat:-34.60,     lng:-58.37,    t:'h', labelLeft:true, labelFs:9, labelFw:'500'},
+  {id:'la_plata',       name:'La Plata',                  lat:-34.87,     lng:-57.88,    t:'s', minZ:6.85, labelLeft:true},
+  {id:'montevideo',     name:'Montevideo',                lat:-34.90,     lng:-56.20,    t:'p'},
+  {id:'zona_comun',     name:'Zona Común',                lat:-34.753225, lng:-57.742525,t:'p', labelLeft:true},
+  {id:'recalada',       name:'Recalada P/S',              lat:-35.106556, lng:-56.257806,t:'p'},
+  {id:'necochea',       name:'Necochea',                  lat:-38.55,     lng:-58.74,    t:'s'},
+  {id:'bahia_blanca',   name:'Bahía Blanca',              lat:-38.72,     lng:-62.27,    t:'s'},
+];
+
+const ROUTES={
+  zona_comun:[], // Zona Común es referencia geográfica; rutas unificadas en recalada
+  recalada:[
+    {to:'buenos_aires', time:'11–13 hrs'},
+    {to:'campana',      time:'16–18 hrs'},
+    {to:'nueva_palmira', time:'18 hrs'},
+    {to:'san_nicolas',  time:'24–28 hrs'},
+    {to:'necochea',     time:'24–30 hrs'},
+    {to:'rosario',      time:'28–34 hrs'},
+    {to:'bahia_blanca', time:'42–48 hrs'},
+  ],
+  buenos_aires:[
+    {to:'la_plata',     time:'~2 hrs'},
+    {to:'zona_comun',   time:'~6 hrs'},
+    {to:'escobar',      time:'~8 hrs'},
+    {to:'rosario',      time:'~24 hrs'},
+  ],
+  // montevideo: punto de referencia solamente, sin rutas
+  // rosario = "Rosario / San Lorenzo" group; villa_const/ramallo absorbed into san_nicolas
+  rosario:[
+    {to:'san_nicolas',  time:'~3 hrs'},
+    {to:'zona_comun',   time:'18–20 hrs'},
+  ],
+  bahia_blanca:[
+    {to:'recalada',   time:'42–48 hrs'},
+    {to:'necochea',   time:'~8 hrs'},
+  ],
+};
+
+const DISTS={
+  // recalada values corrected May-2026: actual Km confirmed, NM derived
+  recalada:     {zona_comun:{km:187,nm:101},la_plata:197,buenos_aires:{km:239,nm:129},escobar:283,campana:{km:308,nm:166},nueva_palmira:{km:314,nm:170},san_pedro:457,san_nicolas:{km:531,nm:287},rosario:{km:633,nm:342},necochea:{km:648,nm:350},bahia_blanca:{km:889,nm:480},diamante:726},
+  zona_comun:   {la_plata:5,  buenos_aires:187,escobar:228,campana:315,san_pedro:392,rosario:508,diamante:633},
+  buenos_aires: {la_plata:62, escobar:156,     campana:198,san_pedro:280,rosario:331,diamante:456},
+  rosario:      {san_nicolas:97,diamante:150},
+};
+
+// ── STATE ─────────────────────────────────────────────────────
+// Z is fractional (step 0.1) — intZ is the nearest integer tile zoom, currentScale is the CSS scale
+// pad/cW/cH track the oversized canvas used to prevent blue borders when currentScale < 1
+let Z=7.60,intZ=8,currentScale=1,clat=-35.8658,clng=-57.2968,W,H,oxT,oyT,offX,offY;
+let pad=0,cW=0,cH=0;
+let sel=[],lastSel=null,rFrom=null,rTo=null,mode='explore',lang='en';
+const hiddenLines=new Set();
+
+// ── DRAG STATE ────────────────────────────────────────────────
+const drag={active:false,sx:0,sy:0,dx:0,dy:0,wasDrag:false};
+
+// ── ELEMENTS ─────────────────────────────────────────────────
+const mc=document.getElementById('mc'),ctx=mc.getContext('2d');
+const svg=document.getElementById('svgl'),app=document.getElementById('app');
+const NS='http://www.w3.org/2000/svg';
+
+// ── PROJECTION ───────────────────────────────────────────────
+// Uses intZ (integer tile zoom) — CSS scale handles the fractional visual difference
+function proj(lat,lng){
+  const n=Math.pow(2,intZ),tx=(lng+180)/360*n,lr=lat*Math.PI/180;
+  const ty=(1-Math.log(Math.tan(lr)+1/Math.cos(lr))/Math.PI)/2*n;
+  return{x:(tx-oxT)*256+offX,y:(ty-oyT)*256+offY};
+}
+
+// ── MAP INIT ─────────────────────────────────────────────────
+function initMap(){
+  W=app.offsetWidth;H=app.offsetHeight;
+  mc.style.transform='';svg.style.transform='';
+
+  // Use Math.round so tiles are always ≤0.5 zoom levels away from target.
+  // This keeps tiles sharp (max CSS scale 1.414×) vs Math.floor which could reach 2×.
+  intZ=Math.round(Z);
+  currentScale=Math.pow(2,Z-intZ); // 0.707 … 1.414
+
+  // When currentScale < 1 the CSS-shrunk canvas would leave gaps.
+  // Oversize the canvas so after CSS scaling it exactly covers the viewport.
+  pad=currentScale<1 ? Math.ceil(Math.max(W,H)*(1/currentScale-1)/2)+4 : 0;
+  cW=W+pad*2; cH=H+pad*2;
+
+  mc.width=cW; mc.height=cH;
+  mc.style.left=(-pad)+'px'; mc.style.top=(-pad)+'px';
+  svg.setAttribute('viewBox',`0 0 ${cW} ${cH}`);
+  svg.setAttribute('width',cW); svg.setAttribute('height',cH);
+  svg.style.left=(-pad)+'px'; svg.style.top=(-pad)+'px';
+
+  // Effective tile-pixel area covered by the canvas before CSS scaling
+  const visW=cW/currentScale, visH=cH/currentScale;
+  const n=Math.pow(2,intZ),cx=(clng+180)/360*n,lr=clat*Math.PI/180;
+  const cy=(1-Math.log(Math.tan(lr)+1/Math.cos(lr))/Math.PI)/2*n;
+  oxT=Math.floor(cx-visW/512); oyT=Math.floor(cy-visH/512);
+  // Viewport center (W/2,H/2) maps to canvas coord (pad+W/2, pad+H/2)
+  offX=pad+W/2-(cx-oxT)*256; offY=pad+H/2-(cy-oyT)*256;
+
+  ctx.fillStyle=C.navy900; ctx.fillRect(0,0,cW,cH);
+  const nX=Math.ceil(visW/256)+2, nY=Math.ceil(visH/256)+2;
+  for(let tx=oxT;tx<=oxT+nX;tx++)
+    for(let ty=oyT;ty<=oyT+nY;ty++)
+      loadTile(tx,ty);
+
+  // transformOrigin 'center center' on the oversized element resolves to
+  // the visual viewport center (W/2, H/2) — CSS scaling pivots correctly.
+  mc.style.transformOrigin='center center';
+  svg.style.transformOrigin='center center';
+  mc.style.transform=`scale(${currentScale})`;
+  svg.style.transform=`scale(${currentScale})`;
+  setTimeout(render,200);
+}
+
+function loadTile(tx,ty){
+  // Tiles always load at integer zoom (intZ); CSS scale handles fractional visual zoom
+  const url=`https://a.basemaps.cartocdn.com/dark_nolabels/${intZ}/${tx}/${ty}.png`,img=new Image();
+  img.onload=()=>{
+    const px=offX+(tx-oxT)*256,py=offY+(ty-oyT)*256;
+    ctx.drawImage(img,px,py,256,256);
+    ctx.fillStyle=rgbaOf(C.navy700,.16);ctx.fillRect(px,py,256,256);
+    render();
+  };
+  img.src=url;
+}
+
+// ── ZOOM ─────────────────────────────────────────────────────
+// Step 0.1 → 51 levels from 5.00 to 10.00
+const ZOOM_STEP=0.05;
+function dz(d){
+  const nz=Math.round((Math.max(5,Math.min(10,Z+d*ZOOM_STEP)))*20)/20; // round to nearest 0.1
+  if(nz===Z)return;
+  Z=nz;initMap();
+}
+
+let wAcc=0,wCool=false;
+app.addEventListener('wheel',e=>{
+  e.preventDefault();
+  if(wCool)return;
+  wAcc+=e.deltaY;
+  if(Math.abs(wAcc)>=40){
+    dz(wAcc<0?1:-1);
+    wAcc=0;wCool=true;
+    setTimeout(()=>{wCool=false;wAcc=0;},250);
+  }
+},{passive:false});
+
+// ── DRAG / PAN ───────────────────────────────────────────────
+function dragStart(x,y){drag.active=true;drag.sx=x;drag.sy=y;drag.dx=0;drag.dy=0;app.classList.add('dragging');}
+function dragMove(x,y){
+  if(!drag.active)return;
+  drag.dx=x-drag.sx;drag.dy=y-drag.sy;
+  // Combine pan translation with the current zoom scale
+  mc.style.transform=`translate(${drag.dx}px,${drag.dy}px) scale(${currentScale})`;
+  svg.style.transform=`translate(${drag.dx}px,${drag.dy}px) scale(${currentScale})`;
+}
+function dragEnd(){
+  if(!drag.active)return;
+  drag.active=false;app.classList.remove('dragging');
+  drag.wasDrag=(Math.abs(drag.dx)>4||Math.abs(drag.dy)>4);
+  if(!drag.wasDrag){
+    mc.style.transform=`scale(${currentScale})`;
+    svg.style.transform=`scale(${currentScale})`;
+    return;
+  }
+  // Drag.dx is in screen pixels; divide by currentScale to get canvas pixels
+  offX+=drag.dx/currentScale;offY+=drag.dy/currentScale;
+  const n=Math.pow(2,intZ);
+  // Canvas center is at (pad+W/2, pad+H/2) in canvas coords
+  const cTx=(pad+W/2-offX)/256+oxT,cTy=(pad+H/2-offY)/256+oyT;
+  clng=cTx/n*360-180;
+  clat=(2*Math.atan(Math.exp(Math.PI*(1-2*cTy/n)))-Math.PI/2)*180/Math.PI;
+  drag.dx=0;drag.dy=0;initMap();
+}
+
+app.addEventListener('mousedown',e=>{if(e.button!==0)return;e.preventDefault();dragStart(e.clientX,e.clientY);});
+window.addEventListener('mousemove',e=>{dragMove(e.clientX,e.clientY);});
+window.addEventListener('mouseup',()=>{dragEnd();});
+app.addEventListener('touchstart',e=>{e.preventDefault();dragStart(e.touches[0].clientX,e.touches[0].clientY);},{passive:false});
+app.addEventListener('touchmove',e=>{e.preventDefault();dragMove(e.touches[0].clientX,e.touches[0].clientY);},{passive:false});
+app.addEventListener('touchend',()=>{dragEnd();});
+
+// ── SVG RENDER ───────────────────────────────────────────────
+function mk(tag,a){const el=document.createElementNS(NS,tag);for(const[k,v]of Object.entries(a))el.setAttribute(k,v);return el;}
+
+function render(){
+  svg.innerHTML='';
+  const d=mk('defs',{});
+  d.innerHTML=`<filter id="g2" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><filter id="g5" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+  svg.appendChild(d);
+
+  // ── PRE-COLLECT BADGE POSITIONS (for collision detection) ────────────────
+  const activeBadgeBBs=[],pendingBadges=[];
+  if(mode==='explore'){
+    sel.forEach(fId=>{
+      const fp=PORTS.find(p=>p.id===fId);if(!fp)return;
+      (ROUTES[fId]||[]).forEach(r=>{
+        if(hiddenLines.has(fId+'__'+r.to))return;
+        const tp=PORTS.find(p=>p.id===r.to);if(!tp)return;
+        if(tp.minZ&&Z<=tp.minZ)return;
+        if(r.time){const txy=proj(tp.lat,tp.lng);pendingBadges.push({port:tp,x:txy.x,y:txy.y,txt:r.time});activeBadgeBBs.push(computeBadgeBB(tp,txy.x,txy.y,r.time));}
+      });
+    });
+  }else if(mode==='route'&&rFrom&&rTo){
+    const tp=PORTS.find(p=>p.id===rTo);
+    if(tp){const rt=findRT(rFrom,rTo);if(rt){const txy=proj(tp.lat,tp.lng);pendingBadges.push({port:tp,x:txy.x,y:txy.y,txt:rt.time});activeBadgeBBs.push(computeBadgeBB(tp,txy.x,txy.y,rt.time));}}
+  }
+
+  // ── LINES ────────────────────────────────────────────────
+  if(mode==='explore'){
+    // Draw lines for every selected port
+    sel.forEach(fromId=>{
+      const fp=PORTS.find(p=>p.id===fromId);if(!fp)return;
+      const fxy=proj(fp.lat,fp.lng);
+      (ROUTES[fromId]||[]).forEach(r=>{
+        const tp=PORTS.find(p=>p.id===r.to);if(!tp)return;
+        const txy=proj(tp.lat,tp.lng);
+        const lineKey=fromId+'__'+r.to;
+
+        // Hidden lines are skipped entirely — reset by deselecting/reselecting the port
+        if(hiddenLines.has(lineKey)) return;
+
+        // Clickable group: invisible thick hit-area + visible dashed line
+        const lg=mk('g',{});
+        lg.style.cursor='pointer';
+        lg.style.pointerEvents='all';
+        // non-scaling-stroke keeps line thickness constant regardless of CSS scale
+        lg.appendChild(mk('line',{x1:fxy.x,y1:fxy.y,x2:txy.x,y2:txy.y,stroke:'transparent','stroke-width':'18','vector-effect':'non-scaling-stroke'}));
+        lg.appendChild(mk('line',{x1:fxy.x,y1:fxy.y,x2:txy.x,y2:txy.y,stroke:C.cyan500,'stroke-width':'1.5','stroke-dasharray':'6,4',opacity:'.65','vector-effect':'non-scaling-stroke'}));
+        lg.addEventListener('click',e=>{
+          e.stopPropagation();
+          hiddenLines.add(lineKey);
+          render();
+        });
+        svg.appendChild(lg);
+      });
+    });
+  } else {
+    // Route mode: single from→to line
+    if(rFrom&&rTo){
+      const fp=PORTS.find(p=>p.id===rFrom),tp=PORTS.find(p=>p.id===rTo);
+      if(fp&&tp){
+        const fxy=proj(fp.lat,fp.lng),txy=proj(tp.lat,tp.lng);
+        svg.appendChild(mk('line',{x1:fxy.x,y1:fxy.y,x2:txy.x,y2:txy.y,stroke:C.cyan500,'stroke-width':'1.5','stroke-dasharray':'6,4',opacity:'.65','vector-effect':'non-scaling-stroke'}));
+        const rt=findRT(rFrom,rTo);
+      }
+    }
+  }
+
+  // ── PORTS ────────────────────────────────────────────────
+  PORTS.forEach(port=>{
+    if(port.minZ && Z<=port.minZ) return; // hidden at or below this zoom threshold
+    const{x,y}=proj(port.lat,port.lng);
+    if(x<-60||x>cW+60||y<-60||y>cH+60)return;
+
+    const isSel = mode==='explore' && sel.includes(port.id);
+    const isFrom= mode==='route'   && port.id===rFrom;
+    const isTo  = mode==='route'   && port.id===rTo;
+    const isCon = mode==='explore' && sel.some(fid=>(ROUTES[fid]||[]).some(r=>r.to===port.id));
+    const active= isSel||isFrom||isTo;
+
+    const rBase=6; // tamaño único para todos los puertos
+    const r=rBase/currentScale; // counter-scale: visual dot stays constant size
+    const op=active?1:isCon?.95:.65;
+    const g=mk('g',{});g.style.cursor='pointer';g.style.pointerEvents='all';
+
+    if(active){
+      g.appendChild(mk('circle',{cx:x,cy:y,r:(rBase+8)/currentScale, fill:'none',stroke:C.cyan500,'stroke-width':'1.5',opacity:'.35','vector-effect':'non-scaling-stroke'}));
+      g.appendChild(mk('circle',{cx:x,cy:y,r:(rBase+15)/currentScale,fill:'none',stroke:C.cyan500,'stroke-width':'.8', opacity:'.12','vector-effect':'non-scaling-stroke'}));
+    }
+    const ci=mk('circle',{cx:x,cy:y,r,fill:C.cyan500,opacity:op,filter:'url(#g2)'});
+    g.appendChild(ci);
+    g.appendChild(mk('circle',{cx:x,cy:y,r:rBase*.4/currentScale,fill:'white'}));
+
+    const fs=port.labelFs||9,fw=port.labelFw||'500';
+    const lw=port.name.length*fs*.56+8;
+    // Counter-scale the label so it stays at a consistent visual size regardless of zoom
+    const cs=1/currentScale;
+    const lg=mk('g',{transform:`translate(${x},${y}) scale(${cs}) translate(${-x},${-y})`});
+    // labelLeft: place label to the left of the dot instead of the right
+    const ll=!!port.labelLeft;
+    const rx=ll ? x-rBase-4-lw : x+rBase+4;
+    const tx=ll ? x-rBase-6    : x+rBase+6;
+    const ta=ll ? 'end'         : 'start';
+    const loy=resolveLabel(port,x,y,activeBadgeBBs);
+    lg.appendChild(mk('rect',{x:rx,y:y-fs+loy,width:lw,height:fs+5,rx:2,fill:rgbaOf(C.navy900,C.labelBgAlpha)}));
+    const lb=mk('text',{x:tx,y:y+3.5+loy,'text-anchor':ta,'font-family':C.fontBold,'font-size':fs,'font-weight':fw,fill:`rgba(255,255,255,${active?1:isCon?.9:.72})`});
+    lb.textContent=port.name;
+    lg.appendChild(lb);
+    g.appendChild(lg);
+
+    g.addEventListener('click',e=>{e.stopPropagation();cp(port.id);});
+    g.addEventListener('mouseenter',()=>{ci.setAttribute('opacity',1);ci.setAttribute('filter','url(#g5)');});
+    g.addEventListener('mouseleave',()=>{ci.setAttribute('opacity',op);ci.setAttribute('filter','url(#g2)');});
+    svg.appendChild(g);
+  });
+  // ── BADGES rendered last (on top of all labels) ───────────────────────────
+  pendingBadges.forEach(b=>badgeBelowLabel(b.port,b.x,b.y,b.txt));
+}
+
+// ── COLLISION HELPERS ─────────────────────────────────────────────────────
+// All bounding boxes are computed in SCREEN pixels.
+// loy is in screen pixels (counter-scale group × CSS scale = 1:1).
+function computeBadgeBB(port,x,y,txt){
+  const cS=currentScale,rBase=6,fs=port.labelFs||9;
+  const lw=port.name.length*fs*.56+8;
+  const ll=!!port.labelLeft,loy=port.labelOffsetY||0;
+  const rx=ll?x-rBase-4-lw:x+rBase+4;
+  const bx=x*cS+(rx+lw/2-x), by=y*cS+(5+loy+10);
+  const bw=txt.length*5.4+14;
+  return{left:bx-bw/2,top:by-9,right:bx+bw/2,bottom:by+8};
+}
+function computeLabelBB(port,x,y,loy){
+  const cS=currentScale,rBase=6,fs=port.labelFs||9;
+  const lw=port.name.length*fs*.56+8;
+  const ll=!!port.labelLeft,rx=ll?x-rBase-4-lw:x+rBase+4;
+  return{left:x*cS+(rx-x),top:y*cS+(-fs+loy),right:x*cS+(rx+lw-x),bottom:y*cS+(5+loy)};
+}
+function bbOverlap(a,b){return a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;}
+function resolveLabel(port,x,y,badgeBBs){
+  let loy=port.labelOffsetY||0;
+  if(!badgeBBs.length)return loy;
+  const cS=currentScale,fs=port.labelFs||9;
+  for(let i=0;i<8;i++){
+    const lb=computeLabelBB(port,x,y,loy);
+    const hit=badgeBBs.find(b=>bbOverlap(lb,b));
+    if(!hit)break;
+    const lbMidY=(lb.top+lb.bottom)/2,hitMidY=(hit.top+hit.bottom)/2;
+    if(hitMidY>lbMidY){
+      // Badge is below label → push label UP (label bottom clears badge top with 3px gap)
+      loy=hit.top-6-y*cS-5;
+    }else{
+      // Badge is above label → push label DOWN (label top clears badge bottom with 3px gap)
+      loy=hit.bottom+3-y*cS+fs;
+    }
+  }
+  return loy;
+}
+function badgeBelowLabel(port,x,y,txt){
+  // Calcula el centro horizontal del label rect del puerto destino
+  // y lo ubica debajo del texto, en lugar de debajo del dot o en la mitad de la línea
+  const rBase=6, fs=port.labelFs||9;
+  const lw=port.name.length*fs*.56+8;
+  const ll=!!port.labelLeft;
+  const loy=port.labelOffsetY||0;
+  const rx=ll ? x-rBase-4-lw : x+rBase+4;
+  const cs=1/currentScale;
+  // Centro horizontal del label proyectado a canvas coords (counter-scaled)
+  const bx=x+(rx+lw/2-x)*cs;
+  // Fondo del rect del label (y+5+loy en espacio counter-scaled) + 8px de gap
+  const by=y+(5+loy+10)*cs;
+  const bw=txt.length*5.4+14;
+  const bg=mk('g',{transform:`translate(${bx},${by}) scale(${cs}) translate(${-bx},${-by})`});
+  bg.appendChild(mk('rect',{x:bx-bw/2,y:by-9,width:bw,height:17,rx:8,fill:C.cyan500,filter:'url(#g2)'}));
+  const bt=mk('text',{x:bx,y:by+3.5,'text-anchor':'middle','font-family':C.fontBold,'font-size':'7.5','font-weight':'700',fill:C.navy700});
+  bt.textContent=txt;bg.appendChild(bt);
+  svg.appendChild(bg);
+}
+function badgeAt(x,y,txt){
+  const bw=txt.length*5.4+14;
+  const cs=1/currentScale;
+  const bg=mk('g',{transform:`translate(${x},${y}) scale(${cs}) translate(${-x},${-y})`});
+  bg.appendChild(mk('rect',{x:x-bw/2,y:y-9,width:bw,height:17,rx:8,fill:C.cyan500,filter:'url(#g2)'}));
+  const bt=mk('text',{x:x,y:y+3.5,'text-anchor':'middle','font-family':C.fontBold,'font-size':'7.5','font-weight':'700',fill:C.navy700});
+  bt.textContent=txt;bg.appendChild(bt);
+  svg.appendChild(bg);
+}
+function badge(x1,y1,x2,y2,txt){
+  const mx=(x1+x2)/2,my=(y1+y2)/2,bw=txt.length*5.4+14;
+  // Counter-scale the badge so it stays visually constant size across all zoom levels
+  const cs=1/currentScale;
+  const bg=mk('g',{transform:`translate(${mx},${my}) scale(${cs}) translate(${-mx},${-my})`});
+  bg.appendChild(mk('rect',{x:mx-bw/2,y:my-9,width:bw,height:17,rx:8,fill:C.cyan500,filter:'url(#g2)'}));
+  const bt=mk('text',{x:mx,y:my+3.5,'text-anchor':'middle','font-family':C.fontBold,'font-size':'7.5','font-weight':'700',fill:C.navy700});
+  bt.textContent=txt;bg.appendChild(bt);
+  svg.appendChild(bg);
+}
+
+// ── INTERACTION ───────────────────────────────────────────────
+app.addEventListener('click',()=>{
+  if(drag.wasDrag){drag.wasDrag=false;return;}
+  if(mode==='explore'){
+    sel=[];lastSel=null;
+    hiddenLines.clear();
+    render();upE();
+  }
+});
+
+function cp(id){
+  if(drag.wasDrag){drag.wasDrag=false;return;}
+  if(mode==='explore'){
+    const idx=sel.indexOf(id);
+    if(idx>=0){
+      sel.splice(idx,1);
+      // Remove hidden-line entries for this port
+      for(const k of [...hiddenLines]) if(k.startsWith(id+'__')) hiddenLines.delete(k);
+      lastSel=sel.length>0?sel[sel.length-1]:null;
+    }else{
+      sel.push(id);
+      lastSel=id;
+    }
+    render();upE();
+  }else{
+    // Route mode
+    if(!document.getElementById('rf').value){
+      document.getElementById('rf').value=id;rFrom=id;
+    }else if(!document.getElementById('rt2').value&&id!==rFrom){
+      document.getElementById('rt2').value=id;rTo=id;
+    }else{
+      document.getElementById('rf').value=id;rFrom=id;
+      document.getElementById('rt2').value='';rTo=null;
+      document.getElementById('rresult').style.display='none';
+    }
+    if(rFrom&&rTo)sr();
+    render();
+  }
+}
+
+// ── MODE ──────────────────────────────────────────────────────
+function sm(m){
+  mode=m;sel=[];lastSel=null;rFrom=null;rTo=null;
+  hiddenLines.clear();
+  document.getElementById('emode').style.display=m==='explore'?'block':'none';
+  document.getElementById('rmode').style.display=m==='route'?'block':'none';
+  document.getElementById('t0').classList.toggle('on',m==='explore');
+  document.getElementById('t1').classList.toggle('on',m==='route');
+  document.getElementById('rresult').style.display='none';
+  document.getElementById('rf').value='';document.getElementById('rt2').value='';
+  render();if(m==='explore')upE();
+}
+
+// ── EXPLORE PANEL — panel estático, no requiere actualización dinámica ──
+function upE(){ /* panel fijo, no-op */ }
+
+// ── ROUTE SEARCH ──────────────────────────────────────────────
+function findRT(a,b){
+  if(ROUTES[a]){const r=ROUTES[a].find(r=>r.to===b);if(r)return r;}
+  if(ROUTES[b]){const r=ROUTES[b].find(r=>r.to===a);if(r)return r;}
+  return null;
+}
+function findD(a,b){
+  if(DISTS[a]&&DISTS[a][b]!=null)return DISTS[a][b];
+  if(DISTS[b]&&DISTS[b][a]!=null)return DISTS[b][a];
+  return null;
+}
+function sr(){
+  const t=TX[lang];
+  rFrom=document.getElementById('rf').value;rTo=document.getElementById('rt2').value;
+  const re=document.getElementById('rresult');re.style.display='block';
+  if(!rFrom||!rTo||rFrom===rTo){re.innerHTML='';render();return;}
+  const rt=findRT(rFrom,rTo),dv=findD(rFrom,rTo);
+  if(!rt&&!dv){re.innerHTML=`<div class="nodata">${t.noroute}</div>`;render();return;}
+  let h='';
+  if(rt)h+=`<div class="rcrd"><div class="rclbl">${t.sh1}</div><div class="rcval">${rt.time}</div></div>`;
+  if(dv){
+    const dvStr=typeof dv==='object'?`${dv.km} Km <span style="font-size:11px;opacity:.7">/ ${dv.nm} NM</span>`:`${dv} NM`;
+    h+=`<div class="rcrd"><div class="rclbl">${t.sh2}</div><div class="rcval">${dvStr}</div></div>`;
+  }
+  re.innerHTML=h;render();
+}
+document.getElementById('rf').addEventListener('change',e=>{rFrom=e.target.value;render();if(rFrom&&rTo)sr();});
+document.getElementById('rt2').addEventListener('change',e=>{rTo=e.target.value;render();if(rFrom&&rTo)sr();});
+
+// ── LANGUAGE ──────────────────────────────────────────────────
+function setLang(l){
+  lang=l;document.querySelectorAll('.lb').forEach(b=>b.classList.toggle('on',b.textContent.toLowerCase()===l));
+  const t=TX[l];
+  document.getElementById('t0').textContent=t.t0;
+  document.getElementById('t1').textContent=t.t1;
+  document.getElementById('lf').textContent=t.lf;
+  document.getElementById('lt').textContent=t.lt;
+  document.getElementById('rbtn').textContent=t.rbtn;
+  document.getElementById('lh').textContent=t.lh;
+  document.getElementById('ll1').textContent=t.ll1;
+  document.getElementById('ll3').textContent=t.ll3;
+  fillSels(l);upE();if(rFrom&&rTo)sr();
+}
+function fillSels(l){
+  const t=TX[l],sorted=[...PORTS].sort((a,b)=>a.name.localeCompare(b.name));
+  ['rf','rt2'].forEach(id=>{
+    const s=document.getElementById(id),val=s.value;
+    s.innerHTML=`<option value="">${t.sp}</option>`+sorted.map(p=>`<option value="${p.id}"${p.id===val?' selected':''}>${p.name}</option>`).join('');
+  });
+}
+
+// ── BOOT ─────────────────────────────────────────────────────
+window.addEventListener('resize',()=>initMap());
+fillSels('en');
+setLang('en');
+initMap();
+
+</script>
+
+<!-- ===== Customizer sidebar ===== -->
+<button id="customizer-toggle" aria-label="Open customizer">IDENTIDAD</button>
+<aside id="customizer-panel" aria-hidden="true">
+  <div class="cust-header">
+    <h3>Identidad Visual</h3>
+    <button id="customizer-close" aria-label="Close">×</button>
+  </div>
+  <p class="cust-sub">Probá cómo se ve el mapa con cada propuesta del rebranding AGNT.</p>
+
+  <label for="palette-select">Paleta de colores</label>
+  <select id="palette-select">
+    <option value="original">Original · T&amp;T actual</option>
+    <option value="a">Propuesta A · Marítimo + tierra</option>
+    <option value="b">Propuesta B · Innovación tech</option>
+    <option value="c">Propuesta C · Azules + verde agua</option>
+    <option value="d">Propuesta D · Azul + naranja</option>
+    <option value="e">Propuesta E · Petróleo + lima</option>
+  </select>
+  <div class="swatch-row" id="palette-swatches"></div>
+
+  <label for="font-select">Tipografía</label>
+  <select id="font-select">
+    <option value="original">Original · Montserrat + Raleway</option>
+    <option value="a">Propuesta A · Mozilla Headline + Roboto</option>
+    <option value="b">Propuesta B · Special Gothic Cond + DM Sans</option>
+    <option value="c">Propuesta C · Sulphur Point + Inter</option>
+  </select>
+
+  <button id="restore-original">Restaurar Original</button>
+
+  <p class="info">
+    Tu selección se guarda en este navegador (separada del Company Profile).<br><br>
+    Versión original sin selector: <code>Mapa Transit Times - T&amp;T Marine - V7.html</code>
+  </p>
+</aside>
+<script>
+// ===== Customizer palettes (hex oficiales AGNT) =====
+const PALETTES = {
+  original: { name:'Original (T&T)',
+    '--color-bg-primary':'#001237','--color-bg-surface':'#00236B',
+    '--color-bg-rgb':'0, 18, 55','--color-bg-surface-rgb':'0, 35, 107',
+    '--color-accent-primary':'#28AAE0','--color-accent-primary-rgb':'40, 170, 224',
+    '--color-accent-secondary':'#7FCBED','--color-accent-tertiary':'#177AA3',
+    '--color-text-primary':'#FFFFFF','--color-text-muted':'#D4ECF9',
+    '--label-bg-alpha':'0.85',
+  },
+  a: { name:'A · Marítimo + tierra',
+    '--color-bg-primary':'#012340','--color-bg-surface':'#10425D',
+    '--color-bg-rgb':'1, 35, 64','--color-bg-surface-rgb':'16, 66, 93',
+    '--color-accent-primary':'#0DAFEE','--color-accent-primary-rgb':'13, 175, 238',
+    '--color-accent-secondary':'#8C6542','--color-accent-tertiary':'#10425D',
+    '--color-text-primary':'#FFFFFF','--color-text-muted':'#D9B282',
+    '--label-bg-alpha':'0',
+  },
+  b: { name:'B · Innovación tech',
+    '--color-bg-primary':'#000A1F','--color-bg-surface':'#00236B',
+    '--color-bg-rgb':'0, 10, 31','--color-bg-surface-rgb':'0, 35, 107',
+    '--color-accent-primary':'#0DAFEE','--color-accent-primary-rgb':'13, 175, 238',
+    '--color-accent-secondary':'#05DBF2','--color-accent-tertiary':'#00236B',
+    '--color-text-primary':'#FFFFFF','--color-text-muted':'#EAFCFF',
+    '--label-bg-alpha':'0.85',
+  },
+  c: { name:'C · Azules + verde agua',
+    '--color-bg-primary':'#001237','--color-bg-surface':'#1E50C7',
+    '--color-bg-rgb':'0, 18, 55','--color-bg-surface-rgb':'30, 80, 199',
+    '--color-accent-primary':'#58E6DB','--color-accent-primary-rgb':'88, 230, 219',
+    '--color-accent-secondary':'#527FD9','--color-accent-tertiary':'#1E50C7',
+    '--color-text-primary':'#FFFFFF','--color-text-muted':'#F2F2F2',
+    '--label-bg-alpha':'0',
+  },
+  d: { name:'D · Azul + naranja',
+    '--color-bg-primary':'#021F59','--color-bg-surface':'#0540F2',
+    '--color-bg-rgb':'2, 31, 89','--color-bg-surface-rgb':'5, 64, 242',
+    '--color-accent-primary':'#F98513','--color-accent-primary-rgb':'249, 133, 19',
+    '--color-accent-secondary':'#E3B7A1','--color-accent-tertiary':'#0540F2',
+    '--color-text-primary':'#FFFFFF','--color-text-muted':'#E7E6E4',
+    '--label-bg-alpha':'0.85',
+  },
+  e: { name:'E · Petróleo + lima',
+    '--color-bg-primary':'#002333','--color-bg-surface':'#2F4959',
+    '--color-bg-rgb':'0, 35, 51','--color-bg-surface-rgb':'47, 73, 89',
+    '--color-accent-primary':'#DDFE55','--color-accent-primary-rgb':'221, 254, 85',
+    '--color-accent-secondary':'#C0D6EB','--color-accent-tertiary':'#2F4959',
+    '--color-text-primary':'#FFFFFF','--color-text-muted':'#C0D6EB',
+    '--label-bg-alpha':'0',
+  },
+};
+
+const FONTS = {
+  original: { name:'Original',
+    '--font-display-light': "'Montserrat', sans-serif",
+    '--font-display-bold': "'Montserrat', sans-serif",
+    '--font-body': "'Raleway', sans-serif",
+  },
+  a: { name:'Mozilla Headline + Roboto',
+    '--font-display-light': "'Mozilla Headline', sans-serif",
+    '--font-display-bold': "'Mozilla Headline', sans-serif",
+    '--font-body': "'Roboto', sans-serif",
+  },
+  b: { name:'Special Gothic + DM Sans',
+    '--font-display-light': "'Special Gothic Condensed One', sans-serif",
+    '--font-display-bold': "'Special Gothic Condensed One', sans-serif",
+    '--font-body': "'DM Sans', sans-serif",
+  },
+  c: { name:'Sulphur Point + Inter',
+    '--font-display-light': "'Sulphur Point', sans-serif",
+    '--font-display-bold': "'Sulphur Point', sans-serif",
+    '--font-body': "'Inter', sans-serif",
+  },
+};
+
+function applyVars(obj){
+  Object.entries(obj).forEach(([k,v])=>{
+    if(k.startsWith('--')) document.documentElement.style.setProperty(k,v);
+  });
+}
+
+function renderSwatches(p){
+  const cont=document.getElementById('palette-swatches'); if(!cont) return;
+  const keys=['--color-bg-primary','--color-bg-surface','--color-accent-primary','--color-accent-secondary','--color-text-muted'];
+  cont.innerHTML=keys.map(k=>`<div class="swatch" title="${k}: ${p[k]}" style="background:${p[k]}"></div>`).join('');
+}
+
+function refreshMap(){
+  // Re-read C from CSS vars and trigger a full map redraw
+  if(typeof readColors==='function') C = readColors();
+  if(typeof initMap==='function') initMap();
+}
+
+function applyPalette(key){
+  const p=PALETTES[key]||PALETTES.original;
+  applyVars(p); renderSwatches(p);
+  localStorage.setItem('map-palette',key);
+  refreshMap();
+}
+
+function applyFont(key){
+  const f=FONTS[key]||FONTS.original;
+  applyVars(f);
+  localStorage.setItem('map-font',key);
+  refreshMap();
+}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  const toggle=document.getElementById('customizer-toggle');
+  const panel=document.getElementById('customizer-panel');
+  const closeBtn=document.getElementById('customizer-close');
+  const pSel=document.getElementById('palette-select');
+  const fSel=document.getElementById('font-select');
+  const restoreBtn=document.getElementById('restore-original');
+
+  toggle.addEventListener('click',()=>{
+    panel.classList.add('open'); panel.setAttribute('aria-hidden','false');
+    toggle.classList.add('hidden');
+  });
+  closeBtn.addEventListener('click',()=>{
+    panel.classList.remove('open'); panel.setAttribute('aria-hidden','true');
+    toggle.classList.remove('hidden');
+  });
+  pSel.addEventListener('change',e=>applyPalette(e.target.value));
+  fSel.addEventListener('change',e=>applyFont(e.target.value));
+  restoreBtn.addEventListener('click',()=>{
+    pSel.value='original'; fSel.value='original';
+    applyPalette('original'); applyFont('original');
+  });
+
+  const savedP=localStorage.getItem('map-palette')||'original';
+  const savedF=localStorage.getItem('map-font')||'original';
+  pSel.value=savedP; fSel.value=savedF;
+  applyPalette(savedP); applyFont(savedF);
+});
+</script>
+
+</body>
+</html>

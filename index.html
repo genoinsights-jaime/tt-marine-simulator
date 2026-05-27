@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Customizer — Company Profile T&T Marine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,700&family=Raleway:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&family=Mozilla+Headline:wght@300;400;500;600;700&family=Special+Gothic+Condensed+One&family=Sulphur+Point:wght@300;400;700&family=Roboto:wght@300;400;500;700&family=DM+Sans:wght@300;400;500;700&family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ===== Design tokens (default = Original T&T) ===== */
+:root {
+  --color-bg-primary: #001237;
+  --color-bg-surface: #061B44;
+  --color-bg-rgb: 0, 18, 55;
+  --color-accent-primary: #28AAE0;
+  --color-accent-secondary: #7FCBED;
+  --color-accent-tertiary: #177AA3;
+  --color-text-primary: #FFFFFF;
+  --color-text-muted: #D4ECF9;
+  --font-display-light: 'Montserrat', sans-serif;
+  --font-display-bold: 'Montserrat', sans-serif;
+  --font-body: 'Raleway', sans-serif;
+}
+
+* { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+html, body {
+  margin: 0; padding: 0; height: 100%; width: 100%;
+  background: #0a0a0a; color: #fff; font-family: 'Montserrat', sans-serif;
+  overflow: hidden;
+}
+.deck {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0;
+}
+.stage {
+  position: relative;
+  background: #fff;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  overflow: hidden;
+  /* width/height set dynamically by JS to match scaled visual size */
+}
+.viewport {
+  position: absolute;
+  top: 0; left: 0;
+  width: 1920px; height: 1080px;
+  transform-origin: 0 0;
+  /* transform: scale(...) set dynamically by JS */
+}
+.slide {
+  position: absolute; inset: 0;
+  width: 1920px; height: 1080px;
+  display: none;
+  background: #fff;
+}
+.slide.active { display: block; }
+.slide .shape, .slide .pic, .slide .conn { pointer-events: none; }
+.slide .txbox { pointer-events: auto; user-select: text; }
+.slide p { margin: 0; font-family: 'Montserrat', sans-serif; }
+
+/* Montserrat Light override removed — handled by --font-display-light variable */
+/* Force cyan color on tagline — override any rendering quirks */
+.tagline-cyan { color: var(--color-accent-primary) !important; -webkit-text-fill-color: var(--color-accent-primary) !important; }
+
+/* Navigation UI */
+.nav {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; align-items: center; gap: 16px;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(10px);
+  padding: 12px 20px; border-radius: 999px;
+  font-family: 'Montserrat', sans-serif;
+  color: #fff; z-index: 9999;
+  transition: opacity 0.4s;
+}
+.nav.hidden { opacity: 0; pointer-events: none; }
+.nav button {
+  background: var(--color-accent-primary); color: #fff; border: 0;
+  width: 40px; height: 40px; border-radius: 50%;
+  cursor: pointer; font-size: 18px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.15s;
+}
+.nav button:hover { transform: scale(1.08); }
+.nav button:disabled { opacity: 0.3; cursor: default; }
+.nav .counter { min-width: 60px; text-align: center; font-size: 14px; letter-spacing: 0.5px; }
+.nav .fs { background: transparent; color: #fff; font-size: 22px; }
+.hint {
+  position: fixed; top: 20px; right: 20px;
+  background: rgba(0,0,0,0.6); color: #fff;
+  font-family: 'Montserrat', sans-serif; font-size: 12px;
+  padding: 8px 14px; border-radius: 6px;
+  transition: opacity 0.4s; z-index: 9999;
+}
+.hint.hidden { opacity: 0; pointer-events: none; }
+@media print {
+  @page { size: 1920px 1080px; margin: 0; }
+  body { background: #fff; overflow: visible; }
+  .deck { position: static; padding: 0; display: block; }
+  .stage { width: 1920px !important; height: 1080px !important; box-shadow: none; page-break-after: always; }
+  .viewport { transform: none !important; }
+  .slide { display: block !important; position: relative !important; page-break-after: always; }
+  .nav, .hint { display: none !important; }
+}
+
+/* ===== Customizer sidebar ===== */
+#customizer-toggle {
+  position: fixed; top: 50%; right: 0; transform: translateY(-50%);
+  background: #1A1D24; color: #fff; border: 0;
+  padding: 14px 12px; border-radius: 10px 0 0 10px;
+  font: 600 12px/1.2 'Inter', system-ui, sans-serif; letter-spacing: 0.4px;
+  cursor: pointer; z-index: 10000;
+  box-shadow: -4px 0 16px rgba(0,0,0,0.35);
+  writing-mode: vertical-rl; text-orientation: mixed;
+  transition: background 0.2s;
+}
+#customizer-toggle:hover { background: #28AAE0; }
+#customizer-toggle.hidden { display: none; }
+#customizer-panel {
+  position: fixed; top: 0; right: -380px;
+  width: 340px; height: 100vh;
+  background: #14171D; color: #fff;
+  padding: 28px 24px 24px; box-sizing: border-box;
+  box-shadow: -8px 0 24px rgba(0,0,0,0.45);
+  transition: right 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10001; overflow-y: auto;
+  font: 14px/1.5 'Inter', system-ui, sans-serif;
+}
+#customizer-panel.open { right: 0; }
+#customizer-panel .cust-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 6px;
+}
+#customizer-panel h3 {
+  margin: 0; font-size: 16px; font-weight: 700; letter-spacing: 0.3px;
+}
+#customizer-close {
+  background: transparent; color: #888; border: 0; cursor: pointer;
+  font-size: 24px; line-height: 1; padding: 4px 10px;
+  border-radius: 6px; transition: all 0.15s;
+}
+#customizer-close:hover { background: #2A2D33; color: #fff; }
+#customizer-panel .cust-sub {
+  color: #888; font-size: 12px; margin: 0 0 24px 0;
+}
+#customizer-panel label {
+  display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.6px;
+  text-transform: uppercase; color: #999; margin: 18px 0 8px;
+}
+#customizer-panel select {
+  width: 100%; padding: 11px 12px; border-radius: 8px;
+  background: #1F2329; color: #fff; border: 1px solid #2D3138;
+  font: 14px/1.3 'Inter', system-ui, sans-serif; cursor: pointer;
+  appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%23999' d='M6 8L0 0h12z'/></svg>");
+  background-repeat: no-repeat; background-position: right 14px center;
+  padding-right: 36px;
+}
+#customizer-panel select:hover { border-color: #28AAE0; }
+#customizer-panel select:focus { outline: 2px solid #28AAE0; outline-offset: 1px; }
+#customizer-panel .swatch-row {
+  display: flex; gap: 4px; margin: 8px 0 0 0;
+}
+#customizer-panel .swatch {
+  flex: 1; height: 16px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.06);
+}
+#restore-original {
+  width: 100%; margin-top: 28px; padding: 11px 14px;
+  background: transparent; color: #28AAE0;
+  border: 1px solid #28AAE0; border-radius: 8px;
+  font: 600 13px/1.2 'Inter', sans-serif; cursor: pointer;
+  transition: all 0.15s;
+}
+#restore-original:hover { background: #28AAE0; color: #14171D; }
+#customizer-panel .info {
+  margin-top: 24px; padding-top: 18px; border-top: 1px solid #24272D;
+  font-size: 11px; color: #666; line-height: 1.5;
+}
+
+
+/* ===== Slide 7 — Interactive Transit Times map ===== */
+/* #app should fill the entire slide (1920×1080) instead of being responsive */
+.slide[data-n="7"] #app {
+  position: absolute !important;
+  left: 0 !important; top: 0 !important;
+  width: 1920px !important; height: 1080px !important;
+  max-width: none !important; aspect-ratio: auto !important;
+  margin: 0 !important;
+}
+/* Legend SVG follows palette: dots and lines use --color-accent-primary */
+#leg svg circle:first-child { fill: var(--color-accent-primary); }
+#leg svg line { stroke: var(--color-accent-primary); }
+#app{
+  width:100%;max-width:1600px;
+  aspect-ratio:16/9;
+  position:relative;overflow:hidden;
+  font-family:var(--font-body);
+  background:var(--navy-900);
+  user-select:none;
+}
+@media(max-width:900px){#app{aspect-ratio:unset;height:100vh;}}
+canvas{position:absolute;top:0;left:0;will-change:transform;}
+#tint{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(var(--color-bg-surface-rgb),.18);pointer-events:none;}
+#svgl{position:absolute;top:0;left:0;pointer-events:none;will-change:transform;}
+#title,#lang,#zoom,#panel,#leg{position:absolute;z-index:20;}
+#title{
+  left:14px;top:14px;
+  background:rgba(var(--color-bg-rgb),.93);
+  border-left:3px solid var(--cyan-500);
+  border-radius:2px 6px 6px 2px;
+  padding:10px 15px 12px;
+  backdrop-filter:blur(8px);
+  box-shadow:0 4px 24px rgba(0,0,0,.55);
+}
+.t-eyebrow{font-family:var(--font-display-bold);color:var(--cyan-500);font-size:7px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:5px;}
+.t-h1{font-family:var(--font-display-bold);color:#fff;font-size:19px;font-weight:800;line-height:1.15;}
+.t-hint{font-family:var(--font-body);color:rgba(255,255,255,.35);font-size:8px;margin-top:7px;}
+#lang{
+  top:14px;right:296px;
+  display:flex;gap:2px;
+  background:rgba(var(--color-bg-rgb),.88);
+  border:1px solid rgba(var(--color-accent-primary-rgb),.25);
+  border-radius:20px;padding:3px;
+  backdrop-filter:blur(6px);
+}
+.lb{font-family:var(--font-display-bold);font-size:8px;font-weight:700;letter-spacing:1px;padding:3px 9px;border:none;border-radius:16px;cursor:pointer;transition:all .15s;}
+.lb.on{background:var(--cyan-500);color:var(--navy-700);}
+.lb:not(.on){background:transparent;color:rgba(255,255,255,.45);}
+#panel{
+  right:14px;top:14px;width:272px;
+  max-height:calc(100% - 28px);overflow-y:auto;
+  background:rgba(var(--color-bg-rgb),.93);
+  border:1px solid rgba(var(--color-accent-primary-rgb),.2);
+  border-left:3px solid var(--cyan-500);
+  border-radius:2px 6px 6px 2px;
+  backdrop-filter:blur(10px);
+  box-shadow:0 4px 24px rgba(0,0,0,.55);
+}
+#panel::-webkit-scrollbar{width:2px;}
+#panel::-webkit-scrollbar-thumb{background:rgba(var(--color-accent-primary-rgb),.35);}
+#panel-title{padding:10px 13px 8px;font-family:var(--font-display-bold);font-size:10px;font-weight:700;letter-spacing:2px;color:rgba(var(--color-accent-primary-rgb),.85);text-transform:uppercase;border-bottom:1px solid rgba(var(--color-accent-primary-rgb),.15);}
+#tabs{display:none;}
+.tab{flex:1;padding:8px 4px;font-family:var(--font-display-bold);font-size:7.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;border:none;cursor:pointer;transition:all .15s;}
+.tab.on{color:var(--cyan-500);background:rgba(var(--color-accent-primary-rgb),.07);border-bottom:2px solid var(--cyan-500);}
+.tab:not(.on){color:var(--gray-500);background:transparent;}
+#pcont{padding:11px 13px;}
+.pname{font-family:var(--font-display-bold);color:#fff;font-size:13px;font-weight:700;margin-bottom:3px;display:none;}
+.ppill{display:none;margin-bottom:6px;}
+.pill{display:inline-block;background:rgba(var(--color-accent-primary-rgb),.1);border:1px solid rgba(var(--color-accent-primary-rgb),.3);color:var(--cyan-500);font-family:var(--font-display-bold);font-size:6.5px;font-weight:700;letter-spacing:1.5px;padding:2px 7px;border-radius:10px;text-transform:uppercase;}
+.pempty{font-family:var(--font-body);color:rgba(255,255,255,.35);font-size:9.5px;line-height:1.7;}
+.pdata{display:none;}
+.shdr{font-family:var(--font-display-bold);color:var(--cyan-500);font-size:7px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin:9px 0 5px;padding-bottom:4px;border-bottom:1px solid rgba(var(--color-accent-primary-rgb),.15);}
+.shdr:first-child{margin-top:0;}
+.rrow{display:flex;justify-content:space-between;align-items:center;padding:4px 7px;margin-bottom:3px;background:rgba(212,236,249,.05);border-left:2px solid rgba(var(--color-accent-primary-rgb),.4);border-radius:0 3px 3px 0;}
+.rto{font-family:var(--font-body);color:rgba(255,255,255,.8);font-size:10.5px;}
+.rt{font-family:var(--font-display-bold);color:var(--cyan-500);font-size:10px;font-weight:700;white-space:nowrap;flex-shrink:0;margin-left:6px;}
+.drow{display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.dto{font-family:var(--font-body);color:rgba(255,255,255,.55);font-size:10.5px;}
+.dval{font-family:var(--font-display-bold);color:rgba(255,255,255,.85);font-size:10.5px;font-weight:700;white-space:nowrap;flex-shrink:0;margin-left:6px;}
+#rmode{display:none;}
+.rlbl{font-family:var(--font-display-bold);color:var(--gray-500);font-size:7px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:3px;display:block;}
+.rsel{width:100%;padding:5px 7px;background:rgba(0,12,40,.8);border:1px solid rgba(var(--color-accent-primary-rgb),.22);border-radius:4px;color:#fff;font-family:var(--font-body);font-size:9.5px;margin-bottom:8px;outline:none;cursor:pointer;}
+.rsel:focus{border-color:var(--cyan-500);}
+.rsel option{background:#001237;color:#fff;}
+#rbtn{width:100%;padding:7px;background:var(--cyan-500);border:none;border-radius:4px;color:var(--navy-700);font-family:var(--font-display-bold);font-size:9px;font-weight:700;letter-spacing:1px;cursor:pointer;margin-bottom:10px;transition:background .15s;}
+#rbtn:hover{background:var(--cyan-700);color:#fff;}
+#rresult{display:none;}
+.rcrd{padding:8px 10px;background:rgba(var(--color-accent-primary-rgb),.07);border-left:3px solid var(--cyan-500);border-radius:0 4px 4px 0;margin-bottom:5px;}
+.rclbl{font-family:var(--font-display-bold);color:var(--gray-500);font-size:6.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2px;}
+.rcval{font-family:var(--font-display-bold);color:var(--cyan-300);font-size:16px;font-weight:700;}
+.nodata{font-family:var(--font-body);color:rgba(255,255,255,.35);font-size:9px;line-height:1.6;}
+/* multi-select indicator */
+.mcount{display:inline-block;margin-left:6px;background:rgba(var(--color-accent-primary-rgb),.18);border:1px solid rgba(var(--color-accent-primary-rgb),.35);color:var(--cyan-500);font-family:var(--font-display-bold);font-size:6px;font-weight:700;letter-spacing:1px;padding:1px 5px;border-radius:8px;text-transform:uppercase;vertical-align:middle;}
+.mtip{font-family:var(--font-body);color:rgba(var(--color-accent-primary-rgb),.5);font-size:7.5px;margin-bottom:7px;line-height:1.5;}
+#leg{
+  left:14px;bottom:14px;
+  background:rgba(var(--color-bg-rgb),.90);border:1px solid rgba(var(--color-accent-primary-rgb),.15);
+  border-radius:6px;padding:9px 12px;backdrop-filter:blur(6px);
+}
+.lhdr{font-family:var(--font-display-bold);color:var(--cyan-500);font-size:8.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px;}
+.lrow{display:flex;align-items:center;gap:7px;margin-bottom:4px;}
+.lrow:last-child{margin-bottom:0;}
+.llbl{font-family:var(--font-body);color:rgba(255,255,255,.55);font-size:9.5px;}
+/* ===== Customizer sidebar ===== */
+#customizer-toggle {
+  position: fixed; top: 50%; right: 0; transform: translateY(-50%);
+  background: #1A1D24; color: #fff; border: 0;
+  padding: 14px 12px; border-radius: 10px 0 0 10px;
+  font: 600 12px/1.2 'Inter', system-ui, sans-serif; letter-spacing: 0.4px;
+  cursor: pointer; z-index: 10000;
+  box-shadow: -4px 0 16px rgba(0,0,0,0.35);
+  writing-mode: vertical-rl; text-orientation: mixed;
+  transition: background 0.2s;
+}
+#customizer-close {
+  background: transparent; color: #888; border: 0; cursor: pointer;
+  font-size: 24px; line-height: 1; padding: 4px 10px; border-radius: 6px; transition: all 0.15s;
+}
+#customizer-close:hover { background: #2A2D33; color: #fff; }
+
+</style>
+</head>
+<body>
+<div class="deck">
+  <div class="stage" id="stage">
+    <div class="viewport" id="viewport">
+<div class="slide active" data-n="1" style="">
+<div class="shape" style="position:absolute;left:0.00px;top:0.00px;width:1920.00px;height:1080.00px;box-sizing:border-box;background:var(--color-bg-primary);box-shadow:0.00px 3.62px 6.30px rgba(0,0,0,0.349)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:129.60px;top:362.00px;width:155.00px;height:3.33px;box-sizing:border-box;background:var(--color-accent-primary)"></div>
+<div class="shape" style="position:absolute;left:129.60px;top:235.14px;width:864.02px;height:92.13px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.150"><span style="font-size:76.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">T&amp;T MARINE</span></p></div></div>
+<div class="shape" style="position:absolute;left:129.60px;top:322.19px;width:864.02px;height:33.92px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.150"><span style="font-size:28.00px;font-family:var(--font-body);color:var(--color-accent-secondary)">Maritime Agency  ·  Trade and Trust</span></p></div></div>
+<div class="shape" style="position:absolute;left:129.60px;top:964.80px;width:864.02px;height:24.24px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.150"><span style="font-size:20.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">Argentina  ·  Uruguay  ·  Paraguay</span></p></div></div>
+<div class="shape" style="position:absolute;left:129.60px;top:1000.80px;width:864.02px;height:21.83px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.150"><span style="font-size:18.00px;font-family:var(--font-body);color:var(--color-accent-primary)">tt-maritime.com.ar</span></p></div></div>
+<div class="shape" style="position:absolute;left:129.60px;top:565.00px;width:1880.46px;height:261.78px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:108.00px;font-family:var(--font-display-light);font-weight:300;color:var(--color-text-primary)">Tailor-made service</span></p>
+<p style="text-align:left;margin:0;line-height:1.000"><span class="tagline-cyan" style="font-size:108.00px;font-family:var(--font-display-light);font-weight:300;color:var(--color-accent-primary)">for every shipment.</span></p></div></div>
+<div class="pic-wrap" style="position:absolute;left:1616.55px;top:797.55px;width:230.91px;height:212.37px;overflow:hidden;"><img class="pic" src="assets/image1.png" style="position:absolute;left:-80.86px;top:-21.92px;width:387.35px;height:374.17px;max-width:none;max-height:none;display:block;" alt=""></div>
+</div>
+<div class="slide" data-n="2" style="">
+<div class="pic-wrap" style="position:absolute;left:0.00px;top:0.00px;width:1930.35px;height:1080.00px;overflow:hidden;"><img class="pic" src="assets/image15.png" style="position:absolute;left:-0.00px;top:-43.41px;width:1930.35px;height:1286.60px;max-width:none;max-height:none;display:block;" alt=""></div>
+<div class="shape" style="position:absolute;left:0.00px;top:-0.02px;width:1930.35px;height:1080.00px;box-sizing:border-box;background:linear-gradient(359.9998deg, rgba(var(--color-bg-rgb), 0.650) 0.0%, rgba(var(--color-bg-rgb), 0.780) 55.0%, rgba(var(--color-bg-rgb), 0.850) 100.0%)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:802.52px;top:303.21px;width:314.98px;height:1.98px;box-sizing:border-box;background:var(--color-accent-primary)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:669.95px;top:80.72px;width:580.13px;height:273.59px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:108.00px;font-family:var(--font-display-light);color:var(--color-text-primary)">Our Story</span></p></div></div>
+<div class="shape" style="position:absolute;left:0.00px;top:314.96px;width:1920.00px;height:62.98px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.300"><span style="font-size:28.00px;font-style:italic;font-family:var(--font-body);color:var(--color-text-primary)">Trade and Trust - every step of the way</span></p></div></div>
+<div class="shape" style="position:absolute;left:0.00px;top:984.25px;width:1920.00px;height:47.24px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.300"><span style="font-size:20.00px;font-family:var(--font-body);color:var(--color-text-primary)">Argentina · Uruguay · Paraguay</span></p></div></div>
+<div class="shape" style="position:absolute;left:305.00px;top:401.57px;width:1310.00px;height:578.00px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.700"><span style="font-size:30.00px;font-style:italic;font-family:var(--font-body);color:var(--color-text-primary)">T&amp;T Marine was founded on a simple belief: Maritime agency services in our region should be built on reliability, commitment, and real operational expertise - not just transactions.</span></p>
+<p style="text-align:left;margin:0;line-height:1.000;font-size:52px"><span style="">&nbsp;</span></p>
+<p style="text-align:left;margin:0;line-height:1.700"><span style="font-size:30.00px;font-style:italic;font-family:var(--font-body);color:var(--color-text-primary)">With extensive industry experience, our team came together around one clear purpose: Trade and Trust - delivering dependable service and earning confidence in every operation.</span></p>
+<p style="text-align:left;margin:0;line-height:1.000;font-size:52px"><span style="">&nbsp;</span></p>
+<p style="text-align:left;margin:0;line-height:1.700"><span style="font-size:30.00px;font-style:italic;font-family:var(--font-body);color:var(--color-text-primary)">Today, we serve clients across Argentina, Uruguay, and Paraguay with a hands-on approach, regional coverage, and 24/7 support.</span></p></div></div>
+</div>
+<div class="slide" data-n="3" style="">
+<div class="pic-wrap" style="position:absolute;left:942.08px;top:-0.27px;width:985.90px;height:1080.54px;overflow:hidden;"><img class="pic" src="assets/image10.png" style="position:absolute;left:-529.25px;top:-0.00px;width:1920.07px;height:1080.54px;max-width:none;max-height:none;display:block;" alt=""></div>
+<div class="shape" style="position:absolute;left:1055.21px;top:0.00px;width:872.76px;height:1080.00px;box-sizing:border-box;background:rgba(var(--color-bg-rgb), 0.820)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:0.00px;top:0.00px;width:1055.22px;height:1080.00px;box-sizing:border-box;background:var(--color-bg-primary)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:1047.34px;top:0.00px;width:7.89px;height:1080.00px;box-sizing:border-box;background:var(--color-accent-primary)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:98.63px;top:387.41px;width:907.11px;height:29.10px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.200"><span style="font-size:24.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-primary)">MISSION</span></p></div></div>
+<div class="shape" style="position:absolute;left:98.62px;top:428.59px;width:907.11px;height:170.08px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:36.00px;font-style:italic;font-family:var(--font-body);color:var(--color-text-primary)">Set the standard for maritime trade across Argentina, Uruguay and Paraguay, with the deepest understanding of the market and the closest service in the business.</span></p></div></div>
+<div class="shape" style="position:absolute;left:98.63px;top:688.60px;width:907.11px;height:33.92px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.200"><span style="font-size:28.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-primary)">VISION</span></p></div></div>
+<div class="shape" style="position:absolute;left:98.62px;top:727.97px;width:907.11px;height:181.09px;box-sizing:border-box;background:var(--color-bg-primary)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:36.00px;font-style:italic;font-family:var(--font-body);color:var(--color-text-primary)">Be the maritime agency of reference in ECSA, not the largest, but the one clients choose as their long-term partner.</span></p></div></div>
+<div class="shape" style="position:absolute;left:1079.56px;top:79.20px;width:844.61px;height:93.59px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:44.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">OUR VALUES</span></p></div></div>
+<div class="shape" style="position:absolute;left:1079.56px;top:180.00px;width:805.77px;height:6.47px;box-sizing:border-box;background:var(--color-accent-primary)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:14.4px 14.4px 14.4px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:1079.56px;top:216.00px;width:108.00px;height:181.80px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:60.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-primary)">01</span></p></div></div>
+<div class="shape" style="position:absolute;left:1187.56px;top:216.00px;width:707.78px;height:69.12px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:40.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">Precision</span></p></div></div>
+<div class="shape" style="position:absolute;left:1187.56px;top:288.00px;width:707.78px;height:108.00px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.300"><span style="font-size:30.00px;font-family:var(--font-body);color:var(--color-text-muted)">Every decimal in the draft, every hour in the ETA.</span></p></div></div>
+<div class="shape" style="position:absolute;left:1079.56px;top:405.00px;width:805.77px;height:4.30px;box-sizing:border-box;background:var(--color-accent-primary)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:14.4px 14.4px 14.4px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:1079.56px;top:426.60px;width:108.00px;height:181.80px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:60.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-primary)">02</span></p></div></div>
+<div class="shape" style="position:absolute;left:1187.56px;top:426.60px;width:707.78px;height:69.12px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:40.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">Proximity</span></p></div></div>
+<div class="shape" style="position:absolute;left:1187.56px;top:498.60px;width:707.78px;height:108.00px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.300"><span style="font-size:30.00px;font-family:var(--font-body);color:var(--color-text-muted)">On top of operations and accessible 24/7.</span></p></div></div>
+<div class="shape" style="position:absolute;left:1079.56px;top:615.60px;width:805.77px;height:4.30px;box-sizing:border-box;background:var(--color-accent-primary)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:14.4px 14.4px 14.4px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:1079.56px;top:637.20px;width:108.00px;height:181.80px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:60.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-primary)">03</span></p></div></div>
+<div class="shape" style="position:absolute;left:1187.56px;top:637.20px;width:707.78px;height:69.12px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:40.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">Intelligence</span></p></div></div>
+<div class="shape" style="position:absolute;left:1187.56px;top:709.20px;width:707.78px;height:108.00px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.300"><span style="font-size:30.00px;font-family:var(--font-body);color:var(--color-text-muted)">Drafts, line-ups, waiting times, statistics &amp; news.</span></p>
+<p style="text-align:left;margin:0;line-height:1.300"><span style="font-size:30.00px;font-family:var(--font-body);color:var(--color-text-muted)">Our insight, your decision.</span></p></div></div>
+<div class="shape" style="position:absolute;left:1079.56px;top:826.20px;width:805.77px;height:4.30px;box-sizing:border-box;background:var(--color-accent-primary)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:14.4px 14.4px 14.4px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:1079.56px;top:847.80px;width:108.00px;height:181.80px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:60.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-primary)">04</span></p></div></div>
+<div class="shape" style="position:absolute;left:1187.56px;top:847.80px;width:707.78px;height:69.12px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:40.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">Trust</span></p></div></div>
+<div class="shape" style="position:absolute;left:1187.56px;top:919.80px;width:707.78px;height:108.00px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.300"><span style="font-size:30.00px;font-family:var(--font-body);color:var(--color-text-muted)">Reliability is the floor. What we promise, we deliver.</span></p></div></div>
+<div class="shape" style="position:absolute;left:93.60px;top:86.33px;width:907.11px;height:273.59px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:108.00px;font-family:var(--font-display-light);color:var(--color-text-primary)">What Drives us</span></p></div></div>
+</div>
+<div class="slide" data-n="4" style="">
+<div class="pic-wrap" style="position:absolute;left:0.00px;top:0.00px;width:806.42px;height:1080.00px;overflow:hidden;"><img class="pic" src="assets/image13.png" style="position:absolute;left:-0.00px;top:-0.00px;width:806.42px;height:1080.00px;max-width:none;max-height:none;display:block;" alt=""></div>
+<div class="shape" style="position:absolute;left:806.42px;top:0.00px;width:1113.57px;height:1080.00px;box-sizing:border-box;background:var(--color-bg-primary)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:806.42px;top:0.00px;width:1113.57px;height:7.94px;box-sizing:border-box;background:var(--color-accent-primary)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:837.92px;top:46.75px;width:1066.33px;height:19.37px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:16.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-secondary)">SERVICE AREA 01</span></p></div></div>
+<div class="shape" style="position:absolute;left:837.92px;top:68.67px;width:1066.33px;height:48.47px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:40.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">Operations &amp; Cargo</span></p></div></div>
+<div class="shape" style="position:absolute;left:837.92px;top:126.01px;width:1050.59px;height:1.42px;box-sizing:border-box;background:var(--color-accent-primary)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:837.92px;top:170.29px;width:496.08px;height:310.00px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000;margin-top:54.60px"><span style="font-size:26.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-secondary)">01</span><span style="font-size:32.00px;font-family:var(--font-body);color:var(--color-text-primary)">&nbsp;&nbsp;Dry bulk, Tankers &amp; MPP</span></p>
+<p style="text-align:left;margin:0;line-height:1.000;margin-top:80.00px"><span style="font-size:26.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-secondary)">02&nbsp;&nbsp;</span><span style="font-size:32.00px;font-family:var(--font-body);color:var(--color-text-primary)">Transshipments</span></p>
+<p style="text-align:left;margin:0;line-height:1.000;margin-top:80.00px"><span style="font-size:26.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-secondary)">03</span><span style="font-size:32.00px;font-family:var(--font-body);color:var(--color-text-primary)">&nbsp;&nbsp;</span><span style="font-size:32.00px;font-family:var(--font-body);color:var(--color-text-primary)">Husbandry services</span></p></div></div>
+<div class="shape" style="position:absolute;left:1371.08px;top:170.29px;width:496.08px;height:310.00px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000;margin-top:54.60px"><span style="font-size:26.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-secondary)">04</span><span style="font-size:32.00px;font-family:var(--font-body);color:var(--color-text-primary)">&nbsp;&nbsp;Barges operations</span></p>
+<p style="text-align:left;margin:0;line-height:1.000;margin-top:80.00px"><span style="font-size:26.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-secondary)">05</span><span style="font-size:32.00px;font-family:var(--font-body);color:var(--color-text-primary)">&nbsp;&nbsp;</span><span style="font-size:32.00px;font-family:var(--font-body);color:var(--color-text-primary)">Storage alternatives</span></p>
+<p style="text-align:left;margin:0;line-height:1.000;margin-top:80.00px"><span style="font-size:26.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-secondary)">06</span><span style="font-size:32.00px;font-family:var(--font-body);color:var(--color-text-primary)">&nbsp;&nbsp;</span><span style="font-size:32.00px;font-family:var(--font-body);color:var(--color-text-primary)">Bunker &amp; lubricants</span></p></div></div>
+<div class="shape" style="position:absolute;left:806.42px;top:535.43px;width:1113.57px;height:1.42px;box-sizing:border-box;background:var(--color-accent-primary)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:1363.21px;top:541.44px;width:1.42px;height:538.58px;box-sizing:border-box;background:var(--color-accent-primary)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:837.92px;top:575.07px;width:503.97px;height:19.37px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:16.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-secondary)">SERVICE AREA 02</span></p></div></div>
+<div class="shape" style="position:absolute;left:837.92px;top:595.45px;width:503.97px;height:48.47px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.150"><span style="font-size:40.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">Docs &amp;</span><span style="font-size:36.00px;font-family:'Arial', sans-serif;color:#000000">&nbsp;</span><span style="font-size:40.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">Compliance</span></p></div></div>
+<div class="shape" style="position:absolute;left:837.92px;top:648.17px;width:488.19px;height:1.42px;box-sizing:border-box;background:var(--color-accent-primary)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:837.92px;top:682.32px;width:488.19px;height:386.00px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000;margin-top:34.20px"><span style="font-size:26.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-secondary)">01</span><span style="font-size:40.00px;font-family:var(--font-body);color:var(--color-text-primary)">&nbsp;</span><span style="font-size:32.00px;font-family:var(--font-body);color:var(--color-text-primary)">&nbsp;Authorities procedures</span></p>
+<p style="text-align:left;margin:0;line-height:1.000;margin-top:55.95px"><span style="font-size:26.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-secondary)">02</span><span style="font-size:32.00px;font-family:var(--font-body);color:var(--color-text-primary)">&nbsp;&nbsp;Tax Affidavit</span></p>
+<p style="text-align:left;margin:0;line-height:1.000;margin-top:55.95px"><span style="font-size:26.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-secondary)">03</span><span style="font-size:32.00px;font-family:var(--font-body);color:var(--color-text-primary)">&nbsp;&nbsp;Flag Waiver</span></p>
+<p style="text-align:left;margin:0;line-height:1.000;margin-top:55.95px;margin-bottom:55.95px"><span style="font-size:26.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-secondary)">04</span><span style="font-size:32.00px;font-family:var(--font-body);color:var(--color-text-primary)">&nbsp;&nbsp;Legal advise</span></p></div></div>
+<div class="shape" style="position:absolute;left:1385.97px;top:572.44px;width:503.97px;height:19.37px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:16.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-secondary)">SERVICE AREA 03</span></p></div></div>
+<div class="shape" style="position:absolute;left:1385.97px;top:595.28px;width:503.97px;height:48.47px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.150"><span style="font-size:40.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">Intelligence</span><span style="font-size:36.00px;font-family:'Arial', sans-serif;color:#000000">&nbsp;</span><span style="font-size:40.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">&amp; Analysis</span></p></div></div>
+<div class="shape" style="position:absolute;left:1386.70px;top:648.17px;width:488.19px;height:1.42px;box-sizing:border-box;background:var(--color-accent-primary)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:1386.70px;top:682.32px;width:488.19px;height:360.00px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:26.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-secondary)">01</span><span style="font-size:32.00px;font-family:var(--font-body);color:var(--color-text-primary)">&nbsp;&nbsp;Draft forecasts</span></p>
+<p style="text-align:left;margin:0;line-height:1.000;margin-top:55.95px"><span style="font-size:26.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-secondary)">02</span><span style="font-size:32.00px;font-family:var(--font-body);color:var(--color-text-primary)">&nbsp;&nbsp;Reports</span></p>
+<p style="text-align:left;margin:0;line-height:1.000;margin-top:55.95px"><span style="font-size:26.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-secondary)">03</span><span style="font-size:32.00px;font-family:var(--font-body);color:var(--color-text-primary)">&nbsp;&nbsp;Statistics</span></p>
+<p style="text-align:left;margin:0;line-height:1.000;margin-top:55.95px;margin-bottom:55.95px"><span style="font-size:26.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-secondary)">04</span><span style="font-size:32.00px;font-family:var(--font-body);color:var(--color-text-primary)">&nbsp;&nbsp;PDA / Port information</span></p></div></div>
+</div>
+<div class="slide" data-n="5" style="">
+<div class="pic-wrap" style="position:absolute;left:0.00px;top:0.00px;width:1920.00px;height:1080.00px;overflow:hidden;"><img class="pic" src="assets/image9.jpg" style="position:absolute;left:-0.00px;top:-0.00px;width:1920.00px;height:1080.00px;max-width:none;max-height:none;display:block;" alt=""></div>
+<div class="shape" style="position:absolute;left:0.00px;top:0.00px;width:1920.00px;height:1080.00px;box-sizing:border-box;background:rgba(var(--color-bg-rgb), 0.549);box-shadow:0.00px 3.62px 6.30px rgba(0,0,0,0.349)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:129.60px;top:129.60px;width:1728.05px;height:26.65px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:22.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-primary)">FOOTPRINT</span></p></div></div>
+<div class="shape" style="position:absolute;left:129.60px;top:187.20px;width:1728.05px;height:130.91px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:108.00px;font-family:var(--font-display-light);color:var(--color-text-primary)">Where We Operate</span></p></div></div>
+<div class="shape" style="position:absolute;left:152.76px;top:367.20px;width:1728.05px;height:43.65px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:36.00px;font-family:var(--font-body);color:var(--color-accent-primary)">From Up River to the Patagonia</span></p></div></div>
+<div class="shape" style="position:absolute;left:84.96px;top:518.40px;width:554.42px;height:381.59px;box-sizing:border-box;background:var(--color-bg-surface);box-shadow:0.00px 3.62px 6.30px rgba(0,0,0,0.349);border-radius:12px"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:84.96px;top:518.40px;width:554.42px;height:11.53px;box-sizing:border-box;background:var(--color-accent-primary);box-shadow:0.00px 3.62px 6.30px rgba(0,0,0,0.349)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:128.16px;top:576.00px;width:468.01px;height:155.15px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:128.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">20+</span></p></div></div>
+<div class="shape" style="position:absolute;left:128.16px;top:741.60px;width:468.01px;height:29.10px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:24.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-primary)">PORTS COVERED</span></p></div></div>
+<div class="shape" style="position:absolute;left:128.16px;top:799.20px;width:468.01px;height:33.92px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:28.00px;font-family:var(--font-body);color:var(--color-text-primary)">in Argentina, Uruguay and Paraguay</span></p></div></div>
+<div class="shape" style="position:absolute;left:682.58px;top:518.40px;width:554.42px;height:381.59px;box-sizing:border-box;background:var(--color-bg-surface);box-shadow:0.00px 3.62px 6.30px rgba(0,0,0,0.349);border-radius:12px"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:682.58px;top:518.40px;width:554.42px;height:11.53px;box-sizing:border-box;background:var(--color-accent-primary);box-shadow:0.00px 3.62px 6.30px rgba(0,0,0,0.349)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:725.78px;top:576.00px;width:468.01px;height:155.15px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:128.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">100+</span></p></div></div>
+<div class="shape" style="position:absolute;left:725.78px;top:741.60px;width:468.01px;height:29.10px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:24.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-primary)">TERMINALS COVERED</span></p></div></div>
+<div class="shape" style="position:absolute;left:725.78px;top:799.20px;width:468.01px;height:33.92px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:28.00px;font-family:var(--font-body);color:var(--color-text-primary)">across key points of the corridor</span></p></div></div>
+<div class="shape" style="position:absolute;left:1280.19px;top:518.40px;width:554.42px;height:381.59px;box-sizing:border-box;background:var(--color-bg-surface);box-shadow:0.00px 3.62px 6.30px rgba(0,0,0,0.349);border-radius:12px"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:1280.19px;top:518.40px;width:554.42px;height:11.53px;box-sizing:border-box;background:var(--color-accent-primary);box-shadow:0.00px 3.62px 6.30px rgba(0,0,0,0.349)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:1323.40px;top:576.00px;width:468.01px;height:310.25px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:128.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">200+</span></p>
+<p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:1323.40px;top:741.60px;width:468.01px;height:29.10px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:24.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-primary)">VESSELS / YEAR</span></p></div></div>
+<div class="shape" style="position:absolute;left:1323.40px;top:799.20px;width:468.01px;height:33.92px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:28.00px;font-family:var(--font-body);color:var(--color-text-primary)">attended by our team</span></p></div></div>
+</div>
+<div class="slide" data-n="6" style="">
+<div class="shape" style="position:absolute;left:72.00px;top:43.25px;width:1296.03px;height:180.00px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:0.00px;top:0.00px;width:1920.00px;height:1080.99px;box-sizing:border-box;background:var(--color-bg-primary)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:86.40px;top:100.80px;width:100.82px;height:4.02px;box-sizing:border-box;background:var(--color-accent-primary)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:86.40px;top:122.40px;width:720.02px;height:29.10px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:24.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">T&amp;T MARINE</span></p></div></div>
+<div class="shape" style="position:absolute;left:86.40px;top:165.60px;width:720.02px;height:24.24px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:20.00px;font-family:var(--font-body);color:var(--color-accent-primary)">Maritime Agency  ·  Trade and Trust</span></p></div></div>
+<div class="shape" style="position:absolute;left:86.40px;top:254.33px;width:1080.03px;height:87.26px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:72.00px;font-family:var(--font-display-light);color:var(--color-text-primary)">Ports &amp; Terminals</span></p></div></div>
+<div class="shape" style="position:absolute;left:86.40px;top:362.33px;width:1080.03px;height:43.65px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:36.00px;font-family:var(--font-body);color:var(--color-accent-secondary)">across Argentina, Uruguay &amp; Paraguay</span></p></div></div>
+<div class="shape" style="position:absolute;left:86.40px;top:518.18px;width:1008.03px;height:24.24px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:20.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-primary)">FOUR OPERATIONAL ZONES</span></p></div></div>
+<div class="shape" style="position:absolute;left:86.40px;top:554.03px;width:100.82px;height:4.02px;box-sizing:border-box;background:var(--color-accent-primary)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:86.40px;top:575.36px;width:1055.13px;height:121.84px;box-sizing:border-box;background:var(--color-bg-surface)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:86.40px;top:575.36px;width:2.83px;height:121.84px;box-sizing:border-box;background:#C0392B"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:86.40px;top:699.25px;width:1055.13px;height:79.09px;box-sizing:border-box;background:var(--color-bg-surface)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:86.40px;top:699.25px;width:2.83px;height:79.09px;box-sizing:border-box;background:#4A7FC1"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:86.40px;top:780.08px;width:1055.13px;height:67.09px;box-sizing:border-box;background:var(--color-bg-surface)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:86.40px;top:780.08px;width:2.83px;height:67.09px;box-sizing:border-box;background:#2A8B74"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:86.40px;top:849.51px;width:1055.13px;height:104.31px;box-sizing:border-box;background:var(--color-bg-surface)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:86.40px;top:849.51px;width:2.83px;height:104.31px;box-sizing:border-box;background:#1E80B4"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:100.10px;top:578.51px;width:72.00px;height:41.20px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:34.00px;font-weight:700;font-family:var(--font-display-bold);color:#C0392B">01</span></p></div></div>
+<div class="shape" style="position:absolute;left:157.71px;top:587.16px;width:345.60px;height:29.10px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:24.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">UP RIVER</span></p></div></div>
+<div class="shape" style="position:absolute;left:489.61px;top:588.61px;width:648.02px;height:96.94px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:20.00px;font-weight:700;font-family:var(--font-body);color:var(--color-accent-secondary)">AR: San Lorenzo, Rosario, Villa Constitución, San Nicolás, Ramallo, San Pedro, Ibicuy, Del Guazú, Km 171, Zárate, Campana</span></p>
+<p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:20.00px;font-weight:700;font-family:var(--font-body);color:var(--color-accent-secondary)">UY: Fray Bentos, Nueva Palmira</span></p>
+<p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:20.00px;font-weight:700;font-family:var(--font-body);color:var(--color-accent-secondary)">P</span><span style="font-size:20.00px;font-weight:700;font-family:var(--font-body);color:var(--color-accent-secondary)">Y:&nbsp;</span><span style="font-size:20.00px;font-weight:700;font-family:var(--font-body);color:var(--color-accent-secondary)">Villeta, Fenix, Trociuk.</span></p></div></div>
+<div class="shape" style="position:absolute;left:100.10px;top:702.40px;width:72.00px;height:41.20px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:34.00px;font-weight:700;font-family:var(--font-display-bold);color:#4A7FC1">02</span></p></div></div>
+<div class="shape" style="position:absolute;left:157.71px;top:711.06px;width:345.60px;height:29.10px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:24.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">RIVER PLATE</span></p></div></div>
+<div class="shape" style="position:absolute;left:489.61px;top:714.79px;width:648.02px;height:48.47px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:20.00px;font-weight:700;font-family:var(--font-body);color:var(--color-accent-secondary)">AR: Buenos Aires, Dock Sud, La Plata</span></p>
+<p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:20.00px;font-weight:700;font-family:var(--font-body);color:var(--color-accent-secondary)">UY: Montevideo.</span></p></div></div>
+<div class="shape" style="position:absolute;left:100.10px;top:783.23px;width:72.00px;height:41.20px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:34.00px;font-weight:700;font-family:var(--font-display-bold);color:#2A8B74">03</span></p></div></div>
+<div class="shape" style="position:absolute;left:157.71px;top:791.89px;width:345.60px;height:29.10px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:24.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">LIGHTERING AREAS</span></p></div></div>
+<div class="shape" style="position:absolute;left:489.61px;top:795.62px;width:648.02px;height:24.24px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:20.00px;font-weight:700;font-family:var(--font-body);color:var(--color-accent-secondary)">Alpha · Bravo · Charlie · Delta</span></p></div></div>
+<div class="shape" style="position:absolute;left:100.10px;top:852.66px;width:72.00px;height:41.20px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:34.00px;font-weight:700;font-family:var(--font-display-bold);color:#1E80B4">04</span></p></div></div>
+<div class="shape" style="position:absolute;left:157.71px;top:861.31px;width:345.60px;height:29.10px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:24.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">SEA PORTS</span></p></div></div>
+<div class="shape" style="position:absolute;left:489.61px;top:865.05px;width:648.02px;height:72.71px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:20.00px;font-weight:700;font-family:var(--font-body);color:var(--color-accent-secondary)">Necochea, Bahía Blanca, Puerto Rosales, Puerto Madryn, Punta Colorada, Comodoro Rivadavia, Caleta Córdova, Caleta Olivia, Punta Loyola, San Julián, Río Grande, Ushuaia.</span></p></div></div>
+<div class="shape" style="position:absolute;left:86.40px;top:986.40px;width:720.02px;height:24.24px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:20.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">Argentina  ·  Uruguay  ·  Paraguay</span></p></div></div>
+<div class="shape" style="position:absolute;left:86.40px;top:1022.40px;width:720.02px;height:21.83px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:18.00px;font-family:var(--font-body);color:var(--color-accent-primary)">tt-maritime.com.ar</span></p></div></div>
+<div class="pic-wrap" style="position:absolute;left:1176.09px;top:0.00px;width:743.76px;height:1080.00px;overflow:hidden;"><img class="pic" src="assets/image8.png" style="position:absolute;left:-36.74px;top:-100.44px;width:821.41px;height:1216.08px;max-width:none;max-height:none;display:block;" alt=""></div>
+</div>
+<div class="slide" data-n="7" style="">
+<!-- Interactive Transit Times map -->
+<div id="app">
+  <canvas id="mc"></canvas>
+  <div id="tint"></div>
+  <svg id="svgl"></svg>
+
+  <div id="title">
+    <div class="t-eyebrow">T&amp;T MARINE MARITIME AGENCY</div>
+    <div class="t-h1" id="tl1">TRANSIT TIMES &amp;</div>
+    <div class="t-h1" id="tl2">DISTANCES</div>
+  </div>
+
+
+  <div id="panel">
+    <div id="panel-title">REFERENCE DATA</div>
+    <div id="tabs">
+      <button class="tab on" id="t0" onclick="sm('explore')">Explore</button>
+      <button class="tab"    id="t1" onclick="sm('route')">Route</button>
+    </div>
+    <div id="pcont">
+      <div id="emode">
+        <div class="shdr">Transit Times · From Recalada</div>
+        <div class="rrow"><span class="rto">Zona Común</span><span class="rt">8–10 hrs</span></div>
+        <div class="rrow"><span class="rto">Buenos Aires / Dock Sud</span><span class="rt">11–13 hrs</span></div>
+        <div class="rrow"><span class="rto">Campana / Zárate</span><span class="rt">16–18 hrs</span></div>
+        <div class="rrow"><span class="rto">Nueva Palmira</span><span class="rt">18 hrs</span></div>
+        <div class="rrow"><span class="rto">San Nicolás / Ramallo / V. Constitución</span><span class="rt">24–28 hrs</span></div>
+        <div class="rrow"><span class="rto">Rosario / San Lorenzo</span><span class="rt">28–34 hrs</span></div>
+        <div class="rrow"><span class="rto">Necochea</span><span class="rt">24–30 hrs</span></div>
+        <div class="rrow"><span class="rto">Bahía Blanca</span><span class="rt">42–48 hrs</span></div>
+        <div class="shdr">Distances · From Recalada</div>
+        <div class="drow"><span class="dto">Zona Común</span><span class="dval">187 Km / 101 NM</span></div>
+        <div class="drow"><span class="dto">Buenos Aires / Dock Sud</span><span class="dval">239 Km / 129 NM</span></div>
+        <div class="drow"><span class="dto">Campana / Zárate</span><span class="dval">308 Km / 166 NM</span></div>
+        <div class="drow"><span class="dto">Nueva Palmira</span><span class="dval">314 Km / 170 NM</span></div>
+        <div class="drow"><span class="dto">San Nicolás / Ramallo / V. Constitución</span><span class="dval">531 Km / 287 NM</span></div>
+        <div class="drow"><span class="dto">Rosario / San Lorenzo</span><span class="dval">633 Km / 342 NM</span></div>
+        <div class="drow"><span class="dto">Necochea</span><span class="dval">648 Km / 350 NM</span></div>
+        <div class="drow"><span class="dto">Bahía Blanca</span><span class="dval">889 Km / 480 NM</span></div>
+      </div>
+      <div id="rmode">
+        <span class="rlbl" id="lf">FROM</span>
+        <select class="rsel" id="rf"></select>
+        <span class="rlbl" id="lt">TO</span>
+        <select class="rsel" id="rt2"></select>
+        <button id="rbtn" onclick="sr()">Show Route</button>
+        <div id="rresult"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="leg">
+    <div class="lhdr" id="lh">Legend</div>
+    <div class="lrow"><svg width="14" height="14"><circle cx="7" cy="7" r="5.5" fill="#28AAE0" opacity=".9"/><circle cx="7" cy="7" r="2.2" fill="white"/></svg><span class="llbl" id="ll1">Port</span></div>
+    <div class="lrow"><svg width="22" height="9"><line x1="0" y1="4.5" x2="22" y2="4.5" stroke="#28AAE0" stroke-width="1.5" stroke-dasharray="5,3"/></svg><span class="llbl" id="ll3">Active route</span></div>
+
+  </div>
+</div>
+</div>
+<div class="slide" data-n="8" style="background:var(--color-bg-primary);">
+<div class="shape" style="position:absolute;left:100.80px;top:172.80px;width:72.00px;height:5.76px;box-sizing:border-box;background:var(--color-accent-tertiary);box-shadow:0.00px 3.62px 6.30px rgba(0,0,0,0.349)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:100.80px;top:223.20px;width:407.54px;height:439.18px;box-sizing:border-box;background:#EAEAEA;box-shadow:0.00px 3.62px 6.30px rgba(0,0,0,0.349)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:100.80px;top:223.20px;width:407.54px;height:5.76px;box-sizing:border-box;background:var(--color-accent-tertiary);box-shadow:0.00px 3.62px 6.30px rgba(0,0,0,0.349)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="pic-wrap" style="position:absolute;left:203.76px;top:252.00px;width:201.61px;height:201.60px;overflow:hidden;"><img class="pic" src="assets/image5.jpg" style="position:absolute;left:-0.00px;top:-30.54px;width:201.61px;height:302.78px;max-width:none;max-height:none;display:block;" alt=""></div>
+<div class="shape" style="position:absolute;left:122.40px;top:479.52px;width:364.31px;height:33.92px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:28.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-bg-primary)">ALEX KELLER</span></p></div></div>
+<div class="shape" style="position:absolute;left:122.40px;top:528.48px;width:364.31px;height:24.24px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:20.00px;font-family:var(--font-body);color:var(--color-accent-tertiary)">Chief Executive Officer</span></p></div></div>
+<div class="shape" style="position:absolute;left:122.40px;top:574.56px;width:364.31px;height:23.01px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:19.00px;font-family:var(--font-body);color:var(--color-bg-primary)">+54 911 5491-0747</span></p></div></div>
+<div class="shape" style="position:absolute;left:122.40px;top:609.12px;width:364.31px;height:21.83px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:18.00px;font-family:var(--font-body);color:#4A5565">ak@tt-maritime.com.ar</span></p></div></div>
+<div class="shape" style="position:absolute;left:537.97px;top:223.64px;width:407.54px;height:439.18px;box-sizing:border-box;background:#EAEAEA;box-shadow:0.00px 3.62px 6.30px rgba(0,0,0,0.349)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:537.97px;top:223.64px;width:407.54px;height:5.76px;box-sizing:border-box;background:var(--color-accent-tertiary);box-shadow:0.00px 3.62px 6.30px rgba(0,0,0,0.349)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:559.57px;top:479.96px;width:364.31px;height:33.92px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:28.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-bg-primary)">SEBASTIAN DIAZ</span></p></div></div>
+<div class="shape" style="position:absolute;left:559.57px;top:528.92px;width:364.31px;height:24.24px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:20.00px;font-family:var(--font-body);color:var(--color-accent-tertiary)">Commercial Manager</span></p></div></div>
+<div class="shape" style="position:absolute;left:559.57px;top:575.00px;width:364.31px;height:23.01px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:19.00px;font-family:var(--font-body);color:var(--color-bg-primary)">+54 911 5220-8612</span></p></div></div>
+<div class="shape" style="position:absolute;left:559.57px;top:609.56px;width:364.31px;height:21.83px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:18.00px;font-family:var(--font-body);color:#4A5565">commercial@tt-maritime.com.ar</span></p></div></div>
+<div class="shape" style="position:absolute;left:1409.80px;top:223.20px;width:407.54px;height:439.18px;box-sizing:border-box;background:#EAEAEA;box-shadow:0.00px 3.62px 6.30px rgba(0,0,0,0.349)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:1409.80px;top:223.20px;width:407.54px;height:5.76px;box-sizing:border-box;background:var(--color-accent-tertiary);box-shadow:0.00px 3.62px 6.30px rgba(0,0,0,0.349)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="pic-wrap" style="position:absolute;left:1512.75px;top:252.00px;width:201.61px;height:201.60px;overflow:hidden;"><img class="pic" src="assets/image18.jpg" style="position:absolute;left:-0.00px;top:-34.07px;width:201.61px;height:302.76px;max-width:none;max-height:none;display:block;" alt=""></div>
+<div class="shape" style="position:absolute;left:1431.40px;top:479.52px;width:364.31px;height:33.92px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:28.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-bg-primary)">SANTIAGO TORTEROLO</span></p></div></div>
+<div class="shape" style="position:absolute;left:1431.40px;top:528.48px;width:364.31px;height:24.24px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:20.00px;font-family:var(--font-body);color:var(--color-accent-tertiary)">Chief Financial Officer</span></p></div></div>
+<div class="shape" style="position:absolute;left:1431.40px;top:574.56px;width:364.31px;height:23.01px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:19.00px;font-family:var(--font-body);color:var(--color-bg-primary)">+54 911 5963-1708</span></p></div></div>
+<div class="shape" style="position:absolute;left:1431.40px;top:609.12px;width:364.31px;height:21.83px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:18.00px;font-family:var(--font-body);color:#4A5565">finance@tt-maritime.com.ar</span></p></div></div>
+<div class="shape" style="position:absolute;left:100.80px;top:688.32px;width:576.02px;height:25.46px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:21.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">COMMERCIAL</span><span style="font-size:21.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">&nbsp;/ OPERATIONS</span></p></div></div>
+<div class="shape" style="position:absolute;left:100.80px;top:727.20px;width:720.02px;height:20.60px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:17.00px;font-family:var(--font-body);color:var(--color-text-muted)">commercial@tt-maritime.com.ar / operations@tt-maritime.com.ar</span></p></div></div>
+<div class="shape" style="position:absolute;left:100.80px;top:760.32px;width:1114.14px;height:1.75px;box-sizing:border-box;background:var(--color-accent-tertiary);box-shadow:0.00px 3.62px 6.30px rgba(0,0,0,0.349)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:1272.43px;top:688.32px;width:504.01px;height:25.46px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:21.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">FINANCE &amp; ADMINISTRATION</span></p></div></div>
+<div class="shape" style="position:absolute;left:1272.43px;top:727.20px;width:576.02px;height:20.60px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:17.00px;font-family:var(--font-body);color:var(--color-text-muted)">finance@tt-maritime.com.ar</span></p></div></div>
+<div class="shape" style="position:absolute;left:1272.43px;top:760.32px;width:540.58px;height:1.75px;box-sizing:border-box;background:var(--color-accent-tertiary);box-shadow:0.00px 3.62px 6.30px rgba(0,0,0,0.349)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="pic-wrap" style="position:absolute;left:113.04px;top:773.23px;width:223.21px;height:223.20px;overflow:hidden;"><img class="pic" src="assets/image7.jpg" style="position:absolute;left:-0.00px;top:-28.17px;width:223.21px;height:334.80px;max-width:none;max-height:none;display:block;" alt=""></div>
+<div class="shape" style="position:absolute;left:100.81px;top:1005.88px;width:247.66px;height:23.01px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:19.00px;font-weight:700;font-family:var(--font-body);color:var(--color-text-primary)">Matias Codina</span></p></div></div>
+<div class="shape" style="position:absolute;left:100.81px;top:1038.33px;width:247.66px;height:20.60px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:17.00px;font-family:var(--font-body);color:var(--color-accent-tertiary)">Senior Operator</span></p></div></div>
+<div class="pic-wrap" style="position:absolute;left:405.95px;top:773.23px;width:223.21px;height:223.20px;overflow:hidden;"><img class="pic" src="assets/image17.jpg" style="position:absolute;left:-0.00px;top:-28.79px;width:223.21px;height:335.23px;max-width:none;max-height:none;display:block;" alt=""></div>
+<div class="shape" style="position:absolute;left:393.71px;top:1005.88px;width:247.66px;height:23.01px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:19.00px;font-weight:700;font-family:var(--font-body);color:var(--color-text-primary)">Juan Cruz Benegas</span></p></div></div>
+<div class="shape" style="position:absolute;left:393.71px;top:1038.33px;width:247.66px;height:20.60px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:17.00px;font-family:var(--font-body);color:var(--color-accent-tertiary)">Senior Operator</span></p></div></div>
+<div class="pic-wrap" style="position:absolute;left:698.85px;top:773.23px;width:223.21px;height:223.20px;overflow:hidden;"><img class="pic" src="assets/image3.jpg" style="position:absolute;left:-0.00px;top:-24.82px;width:223.21px;height:334.80px;max-width:none;max-height:none;display:block;" alt=""></div>
+<div class="shape" style="position:absolute;left:686.62px;top:1005.88px;width:247.66px;height:23.01px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:19.00px;font-weight:700;font-family:var(--font-body);color:var(--color-text-primary)">Matias Ureta</span></p></div></div>
+<div class="shape" style="position:absolute;left:686.62px;top:1038.33px;width:247.66px;height:20.60px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:17.00px;font-family:var(--font-body);color:var(--color-accent-tertiary)">Operator</span></p></div></div>
+<div class="pic-wrap" style="position:absolute;left:991.75px;top:773.23px;width:223.21px;height:223.20px;overflow:hidden;"><img class="pic" src="assets/image16.jpg" style="position:absolute;left:-0.00px;top:-32.63px;width:223.21px;height:334.80px;max-width:none;max-height:none;display:block;" alt=""></div>
+<div class="shape" style="position:absolute;left:979.52px;top:1005.88px;width:247.66px;height:23.01px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:19.00px;font-weight:700;font-family:var(--font-body);color:var(--color-text-primary)">Julian Sutka</span></p></div></div>
+<div class="shape" style="position:absolute;left:979.52px;top:1038.33px;width:247.66px;height:20.60px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:17.00px;font-family:var(--font-body);color:var(--color-accent-tertiary)">Operator</span></p></div></div>
+<div class="pic-wrap" style="position:absolute;left:1284.66px;top:773.23px;width:223.21px;height:223.20px;overflow:hidden;"><img class="pic" src="assets/image4.jpg" style="position:absolute;left:-0.00px;top:-51.89px;width:223.21px;height:339.04px;max-width:none;max-height:none;display:block;" alt=""></div>
+<div class="shape" style="position:absolute;left:1272.43px;top:1005.88px;width:247.66px;height:23.01px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:19.00px;font-weight:700;font-family:var(--font-body);color:var(--color-text-primary)">Diorella Laterza</span></p></div></div>
+<div class="shape" style="position:absolute;left:1272.43px;top:1038.33px;width:247.66px;height:20.60px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:17.00px;font-family:var(--font-body);color:var(--color-accent-tertiary)">D/A Manager</span></p></div></div>
+<div class="pic-wrap" style="position:absolute;left:1577.56px;top:773.23px;width:223.21px;height:223.20px;overflow:hidden;"><img class="pic" src="assets/image19.jpg" style="position:absolute;left:-0.00px;top:-32.99px;width:223.21px;height:335.23px;max-width:none;max-height:none;display:block;" alt=""></div>
+<div class="shape" style="position:absolute;left:1565.33px;top:1005.88px;width:247.66px;height:23.01px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:19.00px;font-weight:700;font-family:var(--font-body);color:var(--color-text-primary)">Renzo DeMarchi</span></p></div></div>
+<div class="shape" style="position:absolute;left:1565.33px;top:1038.33px;width:247.66px;height:20.60px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:17.00px;font-family:var(--font-body);color:var(--color-accent-tertiary)">Finance Assistant</span></p></div></div>
+<div class="shape" style="position:absolute;left:974.81px;top:223.20px;width:407.54px;height:439.18px;box-sizing:border-box;background:#EAEAEA;box-shadow:0.00px 3.62px 6.30px rgba(0,0,0,0.349)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:974.81px;top:223.20px;width:407.54px;height:5.76px;box-sizing:border-box;background:var(--color-accent-tertiary);box-shadow:0.00px 3.62px 6.30px rgba(0,0,0,0.349)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:996.41px;top:479.52px;width:364.31px;height:33.92px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:28.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-bg-primary)">RODRIGO ESCOBAR</span></p></div></div>
+<div class="shape" style="position:absolute;left:996.41px;top:528.48px;width:364.31px;height:24.24px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:20.00px;font-family:var(--font-body);color:var(--color-accent-tertiary)">Operations Manager</span></p></div></div>
+<div class="shape" style="position:absolute;left:996.41px;top:574.56px;width:364.31px;height:23.01px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:19.00px;font-family:var(--font-body);color:var(--color-bg-primary)">+54 911 3881-2713</span></p></div></div>
+<div class="shape" style="position:absolute;left:996.41px;top:609.12px;width:364.31px;height:21.83px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:18.00px;font-family:var(--font-body);color:#4A5565">operations@tt-maritime.com.ar</span></p></div></div>
+<div class="shape" style="position:absolute;left:100.80px;top:72.00px;width:1584.04px;height:87.26px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:72.00px;font-family:var(--font-display-light);color:var(--color-text-primary)">Our Team</span></p></div></div>
+<div class="shape" style="position:absolute;left:100.80px;top:188.15px;width:576.02px;height:25.46px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:21.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">MANAGEMENT</span></p></div></div>
+<div class="pic-wrap" style="position:absolute;left:650.15px;top:253.88px;width:182.85px;height:201.60px;overflow:hidden;"><img class="pic" src="assets/image11.jpg" style="position:absolute;left:-0.00px;top:-30.24px;width:182.85px;height:302.48px;max-width:none;max-height:none;display:block;" alt=""></div>
+<div class="pic-wrap" style="position:absolute;left:1090.77px;top:252.96px;width:201.61px;height:202.56px;overflow:hidden;"><img class="pic" src="assets/image6.jpg" style="position:absolute;left:-0.00px;top:-30.38px;width:201.61px;height:303.93px;max-width:none;max-height:none;display:block;" alt=""></div>
+</div>
+<div class="slide" data-n="9" style="background:var(--color-bg-primary);">
+<div class="pic-wrap" style="position:absolute;left:801.36px;top:187.20px;width:316.80px;height:316.79px;overflow:hidden;"><img class="pic" src="assets/image12.png" style="position:absolute;left:-0.00px;top:-0.00px;width:316.80px;height:316.79px;max-width:none;max-height:none;display:block;" alt=""></div>
+<div class="shape" style="position:absolute;left:0.00px;top:540.00px;width:1919.53px;height:89.29px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:72.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">T&amp;T MARINE</span></p></div></div>
+<svg class="conn" style="position:absolute;left:887.76px;top:645.12px;width:144.00px;height:0.00px;overflow:visible" viewBox="0 0 144.00 1.00" preserveAspectRatio="none"><line x1="0.00" y1="0.00" x2="144.00" y2="0.00" stroke="var(--color-accent-primary)" stroke-width="3.33"/></svg>
+<div class="shape" style="position:absolute;left:0.00px;top:665.28px;width:1919.53px;height:40.30px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:28.00px;font-family:var(--font-body);color:var(--color-accent-primary)">Maritime Agency  ·  Trade and Trust</span></p></div></div>
+<div class="shape" style="position:absolute;left:0.00px;top:964.80px;width:1919.53px;height:36.00px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:22.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">Argentina  ·  Uruguay  ·  Paraguay</span></p></div></div>
+<div class="shape" style="position:absolute;left:0.00px;top:999.36px;width:1919.53px;height:31.70px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:20.00px;font-family:var(--font-body);color:var(--color-accent-primary)">tt-maritime.com.ar</span></p></div></div>
+</div>
+    </div>
+  </div>
+</div>
+<div class="hint" id="hint">← → para navegar · F para pantalla completa · Esc para salir</div>
+<div class="nav" id="nav">
+  <button id="prev" aria-label="Previous">‹</button>
+  <div class="counter"><span id="cur">1</span> / 9</div>
+  <button id="next" aria-label="Next">›</button>
+  <button class="fs" id="fs" aria-label="Fullscreen">⛶</button>
+</div>
+<script>
+const total = 9;
+let current = 1;
+const slides = document.querySelectorAll('.slide');
+const cur = document.getElementById('cur');
+const prevBtn = document.getElementById('prev');
+const nextBtn = document.getElementById('next');
+const fsBtn = document.getElementById('fs');
+const nav = document.getElementById('nav');
+const hint = document.getElementById('hint');
+const viewport = document.getElementById('viewport');
+const stage = document.getElementById('stage');
+
+function show(n) {
+  current = Math.max(1, Math.min(total, n));
+  slides.forEach(s => s.classList.remove('active'));
+  const t = document.querySelector('.slide[data-n="' + current + '"]');
+  if (t) t.classList.add('active');
+  cur.textContent = current;
+  prevBtn.disabled = current === 1;
+  nextBtn.disabled = current === total;
+  history.replaceState(null, '', '#' + current);
+}
+
+function fit() {
+  // Reserve a bit of room so the nav bar doesn't cover the deck
+  const padW = 24;
+  const padH = 24;
+  const w = window.innerWidth - padW * 2;
+  const h = window.innerHeight - padH * 2;
+  const scale = Math.min(w / 1920, h / 1080);
+  viewport.style.transform = 'scale(' + scale + ')';
+  stage.style.width = (1920 * scale) + 'px';
+  stage.style.height = (1080 * scale) + 'px';
+}
+
+prevBtn.addEventListener('click', () => show(current - 1));
+nextBtn.addEventListener('click', () => show(current + 1));
+fsBtn.addEventListener('click', () => {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+  else document.exitFullscreen();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') show(current + 1);
+  else if (e.key === 'ArrowLeft' || e.key === 'PageUp') show(current - 1);
+  else if (e.key === 'Home') show(1);
+  else if (e.key === 'End') show(total);
+  else if (e.key === 'f' || e.key === 'F') fsBtn.click();
+});
+window.addEventListener('resize', fit);
+window.addEventListener('load', () => {
+  fit();
+  const hash = parseInt((location.hash || '#1').slice(1));
+  if (!isNaN(hash)) show(hash);
+  setTimeout(() => hint.classList.add('hidden'), 5000);
+});
+
+// Auto-hide nav after inactivity
+let hideTimer;
+function resetHide() {
+  nav.classList.remove('hidden');
+  clearTimeout(hideTimer);
+  hideTimer = setTimeout(() => nav.classList.add('hidden'), 3500);
+}
+document.addEventListener('mousemove', resetHide);
+document.addEventListener('touchstart', resetHide);
+resetHide();
+</script>
+
+<!-- ===== Customizer sidebar ===== -->
+<button id="customizer-toggle" aria-label="Open customizer">PERSONALIZAR</button>
+<aside id="customizer-panel" aria-hidden="true">
+  <div class="cust-header">
+    <h3>Personalizar Diseño</h3>
+    <button id="customizer-close" aria-label="Close">×</button>
+  </div>
+  <p class="cust-sub">Probá distintas paletas y tipografías del rebranding propuesto por AGNT.</p>
+
+  <label for="palette-select">Paleta de colores</label>
+  <select id="palette-select">
+    <option value="original">Original · T&amp;T actual</option>
+    <option value="a">Propuesta A · Marítimo + tierra</option>
+    <option value="b">Propuesta B · Innovación tech</option>
+    <option value="c">Propuesta C · Azules + verde agua</option>
+    <option value="d">Propuesta D · Azul + naranja</option>
+    <option value="e">Propuesta E · Petróleo + lima</option>
+  </select>
+  <div class="swatch-row" id="palette-swatches"></div>
+
+  <label for="font-select">Tipografía</label>
+  <select id="font-select">
+    <option value="original">Original · Montserrat + Raleway</option>
+    <option value="a">Propuesta A · Mozilla Headline + Roboto</option>
+    <option value="b">Propuesta B · Special Gothic Cond + DM Sans</option>
+    <option value="c">Propuesta C · Sulphur Point + Inter</option>
+  </select>
+
+  <button id="restore-original">Restaurar Original</button>
+
+  <p class="info">
+    Las combinaciones se guardan automáticamente en este navegador.<br><br>
+    La versión congelada original está en <code>index_v1.html</code>.
+  </p>
+</aside>
+
+<script>
+// ===== Design system =====
+const PALETTES = {
+  original: { name:'Original (T&T)',
+    '--color-bg-primary': '#001237',
+    '--color-bg-surface': '#061B44',
+    '--color-bg-rgb': '0, 18, 55',
+    '--color-accent-primary': '#28AAE0',
+    '--color-accent-secondary': '#7FCBED',
+    '--color-accent-tertiary': '#177AA3',
+    '--color-text-primary': '#FFFFFF',
+    '--color-text-muted': '#D4ECF9',
+  },
+  a: { name:'Propuesta A (Marítimo + tierra)',
+    '--color-bg-primary': '#012340',
+    '--color-bg-surface': '#10425D',
+    '--color-bg-rgb': '1, 35, 64',
+    '--color-accent-primary': '#0DAFEE',
+    '--color-accent-secondary': '#8C6542',
+    '--color-accent-tertiary': '#10425D',
+    '--color-text-primary': '#FFFFFF',
+    '--color-text-muted': '#D9B282',
+  },
+  b: { name:'Propuesta B (Innovación tech)',
+    '--color-bg-primary': '#000A1F',
+    '--color-bg-surface': '#00236B',
+    '--color-bg-rgb': '0, 10, 31',
+    '--color-accent-primary': '#0DAFEE',
+    '--color-accent-secondary': '#05DBF2',
+    '--color-accent-tertiary': '#00236B',
+    '--color-text-primary': '#FFFFFF',
+    '--color-text-muted': '#EAFCFF',
+  },
+  c: { name:'Propuesta C (Azules + verde agua)',
+    '--color-bg-primary': '#001237',
+    '--color-bg-surface': '#1E50C7',
+    '--color-bg-rgb': '0, 18, 55',
+    '--color-accent-primary': '#58E6DB',
+    '--color-accent-secondary': '#527FD9',
+    '--color-accent-tertiary': '#1E50C7',
+    '--color-text-primary': '#FFFFFF',
+    '--color-text-muted': '#F2F2F2',
+  },
+  d: { name:'Propuesta D (Azul + naranja)',
+    '--color-bg-primary': '#021F59',
+    '--color-bg-surface': '#0540F2',
+    '--color-bg-rgb': '2, 31, 89',
+    '--color-accent-primary': '#F98513',
+    '--color-accent-secondary': '#E3B7A1',
+    '--color-accent-tertiary': '#0540F2',
+    '--color-text-primary': '#FFFFFF',
+    '--color-text-muted': '#E7E6E4',
+  },
+  e: { name:'Propuesta E (Petróleo + lima)',
+    '--color-bg-primary': '#002333',
+    '--color-bg-surface': '#2F4959',
+    '--color-bg-rgb': '0, 35, 51',
+    '--color-accent-primary': '#DDFE55',
+    '--color-accent-secondary': '#C0D6EB',
+    '--color-accent-tertiary': '#2F4959',
+    '--color-text-primary': '#FFFFFF',
+    '--color-text-muted': '#C0D6EB',
+  },
+};
+
+const FONTS = {
+  original: { name:'Original',
+    '--font-display-light': "'Montserrat', sans-serif",
+    '--font-display-bold': "'Montserrat', sans-serif",
+    '--font-body': "'Raleway', sans-serif",
+  },
+  a: { name:'Mozilla Headline + Roboto',
+    '--font-display-light': "'Mozilla Headline', sans-serif",
+    '--font-display-bold': "'Mozilla Headline', sans-serif",
+    '--font-body': "'Roboto', sans-serif",
+  },
+  b: { name:'Special Gothic + DM Sans',
+    '--font-display-light': "'Special Gothic Condensed One', sans-serif",
+    '--font-display-bold': "'Special Gothic Condensed One', sans-serif",
+    '--font-body': "'DM Sans', sans-serif",
+  },
+  c: { name:'Sulphur Point + Inter',
+    '--font-display-light': "'Sulphur Point', sans-serif",
+    '--font-display-bold': "'Sulphur Point', sans-serif",
+    '--font-body': "'Inter', sans-serif",
+  },
+};
+
+function applyVars(obj) {
+  Object.entries(obj).forEach(([k,v]) => {
+    if (k.startsWith('--')) document.documentElement.style.setProperty(k, v);
+  });
+}
+
+function applyPalette(key) {
+  const p = PALETTES[key] || PALETTES.original;
+  applyVars(p);
+  localStorage.setItem('tt-palette', key);
+  renderSwatches(p);
+}
+
+function applyFont(key) {
+  const f = FONTS[key] || FONTS.original;
+  applyVars(f);
+  localStorage.setItem('tt-font', key);
+}
+
+function renderSwatches(palette) {
+  const cont = document.getElementById('palette-swatches');
+  if (!cont) return;
+  const keys = ['--color-bg-primary','--color-bg-surface','--color-accent-primary','--color-accent-secondary','--color-text-muted'];
+  cont.innerHTML = keys.map(k => `<div class="swatch" title="${k}: ${palette[k]}" style="background:${palette[k]}"></div>`).join('');
+}
+
+// ===== Wire up UI =====
+window.addEventListener('DOMContentLoaded', () => {
+  const toggle = document.getElementById('customizer-toggle');
+  const panel = document.getElementById('customizer-panel');
+  const closeBtn = document.getElementById('customizer-close');
+  const pSel = document.getElementById('palette-select');
+  const fSel = document.getElementById('font-select');
+  const restoreBtn = document.getElementById('restore-original');
+
+  toggle.addEventListener('click', () => {
+    panel.classList.add('open'); panel.setAttribute('aria-hidden','false');
+    toggle.classList.add('hidden');
+  });
+  closeBtn.addEventListener('click', () => {
+    panel.classList.remove('open'); panel.setAttribute('aria-hidden','true');
+    toggle.classList.remove('hidden');
+  });
+  pSel.addEventListener('change', e => applyPalette(e.target.value));
+  fSel.addEventListener('change', e => applyFont(e.target.value));
+  restoreBtn.addEventListener('click', () => {
+    pSel.value = 'original'; fSel.value = 'original';
+    applyPalette('original'); applyFont('original');
+  });
+
+  // Restore saved selection
+  const savedP = localStorage.getItem('tt-palette') || 'original';
+  const savedF = localStorage.getItem('tt-font') || 'original';
+  pSel.value = savedP; fSel.value = savedF;
+  applyPalette(savedP); applyFont(savedF);
+});
+</script>
+
+
+<script>
+
+// Colors read from CSS vars so palette swaps propagate to canvas/SVG
+function readColors(){
+  const cs=getComputedStyle(document.documentElement);
+  const g=v=>cs.getPropertyValue(v).trim();
+  return {
+    navy900: g('--color-bg-primary')   || '#001237',
+    navy700: g('--color-bg-surface')   || '#00236B',
+    cyan700: g('--color-accent-tertiary') || '#177AA3',
+    cyan500: g('--color-accent-primary')  || '#28AAE0',
+    cyan300: g('--color-accent-secondary')|| '#7FCBED',
+    gray500: '#8B97A8',
+    fontBold: (g('--font-display-bold') || "'Montserrat',sans-serif").replace(/^['"]|['"]$/g,''),
+    fontBody: (g('--font-body')        || "'Raleway',sans-serif").replace(/^['"]|['"]$/g,''),
+    labelBgAlpha: parseFloat(g('--label-bg-alpha') || '0.85'),
+  };
+}
+function hexToRgb(h){const c=h.replace('#','').trim();return{r:parseInt(c.slice(0,2),16),g:parseInt(c.slice(2,4),16),b:parseInt(c.slice(4,6),16)};}
+function rgbaOf(hex,a){const r=hexToRgb(hex);return `rgba(${r.r},${r.g},${r.b},${a})`;}
+let C = readColors();
+const TX={
+  en:{tl1:'TRANSIT TIMES &',tl2:'DISTANCES',hint:'Click port to select · click again to deselect · drag to pan',t0:'Explore',t1:'Route',empty:'Click any port on the map to view transit times and distances to other ports in the network.',mtip:'%d ports selected — showing last. Click any line to toggle it.',lf:'FROM',lt:'TO',rbtn:'Show Route',sp:'Select port...',sh1:'Transit Times',sh2:'Distances',nodata:'No transit data available for this port.',noroute:'No direct route data between these ports.',lh:'Legend',ll1:'Port',ll3:'Active route',pt:{h:'Regional Hub',p:'Major Port',s:'Secondary Port'}},
+  es:{tl1:'TIEMPOS DE TRÁNSITO Y',tl2:'DISTANCIAS',hint:'Click para seleccionar · click de nuevo para deseleccionar · arrastrá para mover',t0:'Explorar',t1:'Ruta',empty:'Hacé click en cualquier puerto del mapa para ver tiempos de tránsito y distancias.',mtip:'%d puertos seleccionados — mostrando el último. Clickeá una línea para ocultarla.',lf:'DESDE',lt:'HASTA',rbtn:'Ver Ruta',sp:'Seleccioná un puerto...',sh1:'Tiempos de Tránsito',sh2:'Distancias',nodata:'No hay datos de tránsito para este puerto todavía.',noroute:'No hay datos de ruta directa entre estos puertos.',lh:'Referencias',ll1:'Puerto',ll3:'Ruta activa',pt:{h:'Hub Regional',p:'Puerto Principal',s:'Puerto Secundario'}}
+};
+
+const PORTS=[
+  {id:'diamante',       name:'Diamante',                  lat:-32.07,     lng:-60.63,    t:'s'},
+  // Rosario / San Lorenzo grouped — single point at San Lorenzo (reference port)
+  {id:'rosario',        name:'Rosario / San Lorenzo',     lat:-32.74,     lng:-60.73,    t:'p'},
+  // San Nicolás / Villa Constitución / Ramallo grouped — single point at San Nicolás
+  {id:'san_nicolas',    name:'San Nicolás / Villa Constitución / Ramallo', lat:-33.34, lng:-60.23, t:'s'},
+  {id:'san_pedro',      name:'San Pedro',                 lat:-33.68,     lng:-59.67,    t:'s', labelLeft:true, labelOffsetY:8},
+  {id:'fray_bentos',    name:'Fray Bentos',               lat:-33.13,     lng:-58.30,    t:'s'},
+  {id:'nueva_palmira',  name:'Nueva Palmira',             lat:-33.87,     lng:-58.43,    t:'s'},
+  {id:'campana',        name:'Campana / Zárate',          lat:-34.17,     lng:-58.93,    t:'s'},
+  // Buenos Aires / Dock Sud grouped — single point, Dock Sud absorbed
+  {id:'buenos_aires',   name:'Buenos Aires / Dock Sud',   lat:-34.60,     lng:-58.37,    t:'h', labelLeft:true, labelFs:9, labelFw:'500'},
+  {id:'la_plata',       name:'La Plata',                  lat:-34.87,     lng:-57.88,    t:'s', minZ:6.85, labelLeft:true},
+  {id:'montevideo',     name:'Montevideo',                lat:-34.90,     lng:-56.20,    t:'p'},
+  {id:'zona_comun',     name:'Zona Común',                lat:-34.753225, lng:-57.742525,t:'p', labelLeft:true},
+  {id:'recalada',       name:'Recalada P/S',              lat:-35.106556, lng:-56.257806,t:'p'},
+  {id:'necochea',       name:'Necochea',                  lat:-38.55,     lng:-58.74,    t:'s'},
+  {id:'bahia_blanca',   name:'Bahía Blanca',              lat:-38.72,     lng:-62.27,    t:'s'},
+];
+
+const ROUTES={
+  zona_comun:[], // Zona Común es referencia geográfica; rutas unificadas en recalada
+  recalada:[
+    {to:'buenos_aires', time:'11–13 hrs'},
+    {to:'campana',      time:'16–18 hrs'},
+    {to:'nueva_palmira', time:'18 hrs'},
+    {to:'san_nicolas',  time:'24–28 hrs'},
+    {to:'necochea',     time:'24–30 hrs'},
+    {to:'rosario',      time:'28–34 hrs'},
+    {to:'bahia_blanca', time:'42–48 hrs'},
+  ],
+  buenos_aires:[
+    {to:'la_plata',     time:'~2 hrs'},
+    {to:'zona_comun',   time:'~6 hrs'},
+    {to:'escobar',      time:'~8 hrs'},
+    {to:'rosario',      time:'~24 hrs'},
+  ],
+  // montevideo: punto de referencia solamente, sin rutas
+  // rosario = "Rosario / San Lorenzo" group; villa_const/ramallo absorbed into san_nicolas
+  rosario:[
+    {to:'san_nicolas',  time:'~3 hrs'},
+    {to:'zona_comun',   time:'18–20 hrs'},
+  ],
+  bahia_blanca:[
+    {to:'recalada',   time:'42–48 hrs'},
+    {to:'necochea',   time:'~8 hrs'},
+  ],
+};
+
+const DISTS={
+  // recalada values corrected May-2026: actual Km confirmed, NM derived
+  recalada:     {zona_comun:{km:187,nm:101},la_plata:197,buenos_aires:{km:239,nm:129},escobar:283,campana:{km:308,nm:166},nueva_palmira:{km:314,nm:170},san_pedro:457,san_nicolas:{km:531,nm:287},rosario:{km:633,nm:342},necochea:{km:648,nm:350},bahia_blanca:{km:889,nm:480},diamante:726},
+  zona_comun:   {la_plata:5,  buenos_aires:187,escobar:228,campana:315,san_pedro:392,rosario:508,diamante:633},
+  buenos_aires: {la_plata:62, escobar:156,     campana:198,san_pedro:280,rosario:331,diamante:456},
+  rosario:      {san_nicolas:97,diamante:150},
+};
+
+// ── STATE ─────────────────────────────────────────────────────
+// Z is fractional (step 0.1) — intZ is the nearest integer tile zoom, currentScale is the CSS scale
+// pad/cW/cH track the oversized canvas used to prevent blue borders when currentScale < 1
+let Z=7.60,intZ=8,currentScale=1,clat=-35.8658,clng=-57.2968,W,H,oxT,oyT,offX,offY;
+let pad=0,cW=0,cH=0;
+let sel=[],lastSel=null,rFrom=null,rTo=null,mode='explore',lang='en';
+const hiddenLines=new Set();
+
+// ── DRAG STATE ────────────────────────────────────────────────
+const drag={active:false,sx:0,sy:0,dx:0,dy:0,wasDrag:false};
+
+// ── ELEMENTS ─────────────────────────────────────────────────
+const mc=document.getElementById('mc'),ctx=mc.getContext('2d');
+const svg=document.getElementById('svgl'),app=document.getElementById('app');
+const NS='http://www.w3.org/2000/svg';
+
+// ── PROJECTION ───────────────────────────────────────────────
+// Uses intZ (integer tile zoom) — CSS scale handles the fractional visual difference
+function proj(lat,lng){
+  const n=Math.pow(2,intZ),tx=(lng+180)/360*n,lr=lat*Math.PI/180;
+  const ty=(1-Math.log(Math.tan(lr)+1/Math.cos(lr))/Math.PI)/2*n;
+  return{x:(tx-oxT)*256+offX,y:(ty-oyT)*256+offY};
+}
+
+// ── MAP INIT ─────────────────────────────────────────────────
+function initMap(){
+  W=app.offsetWidth;H=app.offsetHeight;
+  mc.style.transform='';svg.style.transform='';
+
+  // Use Math.round so tiles are always ≤0.5 zoom levels away from target.
+  // This keeps tiles sharp (max CSS scale 1.414×) vs Math.floor which could reach 2×.
+  intZ=Math.round(Z);
+  currentScale=Math.pow(2,Z-intZ); // 0.707 … 1.414
+
+  // When currentScale < 1 the CSS-shrunk canvas would leave gaps.
+  // Oversize the canvas so after CSS scaling it exactly covers the viewport.
+  pad=currentScale<1 ? Math.ceil(Math.max(W,H)*(1/currentScale-1)/2)+4 : 0;
+  cW=W+pad*2; cH=H+pad*2;
+
+  mc.width=cW; mc.height=cH;
+  mc.style.left=(-pad)+'px'; mc.style.top=(-pad)+'px';
+  svg.setAttribute('viewBox',`0 0 ${cW} ${cH}`);
+  svg.setAttribute('width',cW); svg.setAttribute('height',cH);
+  svg.style.left=(-pad)+'px'; svg.style.top=(-pad)+'px';
+
+  // Effective tile-pixel area covered by the canvas before CSS scaling
+  const visW=cW/currentScale, visH=cH/currentScale;
+  const n=Math.pow(2,intZ),cx=(clng+180)/360*n,lr=clat*Math.PI/180;
+  const cy=(1-Math.log(Math.tan(lr)+1/Math.cos(lr))/Math.PI)/2*n;
+  oxT=Math.floor(cx-visW/512); oyT=Math.floor(cy-visH/512);
+  // Viewport center (W/2,H/2) maps to canvas coord (pad+W/2, pad+H/2)
+  offX=pad+W/2-(cx-oxT)*256; offY=pad+H/2-(cy-oyT)*256;
+
+  ctx.fillStyle=C.navy900; ctx.fillRect(0,0,cW,cH);
+  const nX=Math.ceil(visW/256)+2, nY=Math.ceil(visH/256)+2;
+  for(let tx=oxT;tx<=oxT+nX;tx++)
+    for(let ty=oyT;ty<=oyT+nY;ty++)
+      loadTile(tx,ty);
+
+  // transformOrigin 'center center' on the oversized element resolves to
+  // the visual viewport center (W/2, H/2) — CSS scaling pivots correctly.
+  mc.style.transformOrigin='center center';
+  svg.style.transformOrigin='center center';
+  mc.style.transform=`scale(${currentScale})`;
+  svg.style.transform=`scale(${currentScale})`;
+  setTimeout(render,200);
+}
+
+function loadTile(tx,ty){
+  // Tiles always load at integer zoom (intZ); CSS scale handles fractional visual zoom
+  const url=`https://a.basemaps.cartocdn.com/dark_nolabels/${intZ}/${tx}/${ty}.png`,img=new Image();
+  img.onload=()=>{
+    const px=offX+(tx-oxT)*256,py=offY+(ty-oyT)*256;
+    ctx.drawImage(img,px,py,256,256);
+    ctx.fillStyle=rgbaOf(C.navy700,.16);ctx.fillRect(px,py,256,256);
+    render();
+  };
+  img.src=url;
+}
+
+// ── ZOOM ─────────────────────────────────────────────────────
+// Step 0.1 → 51 levels from 5.00 to 10.00
+const ZOOM_STEP=0.05;
+function dz(d){
+  const nz=Math.round((Math.max(5,Math.min(10,Z+d*ZOOM_STEP)))*20)/20; // round to nearest 0.1
+  if(nz===Z)return;
+  Z=nz;initMap();
+}
+
+let wAcc=0,wCool=false;
+app.addEventListener('wheel',e=>{
+  e.preventDefault();
+  if(wCool)return;
+  wAcc+=e.deltaY;
+  if(Math.abs(wAcc)>=40){
+    dz(wAcc<0?1:-1);
+    wAcc=0;wCool=true;
+    setTimeout(()=>{wCool=false;wAcc=0;},250);
+  }
+},{passive:false});
+
+// ── DRAG / PAN ───────────────────────────────────────────────
+function dragStart(x,y){drag.active=true;drag.sx=x;drag.sy=y;drag.dx=0;drag.dy=0;app.classList.add('dragging');}
+function dragMove(x,y){
+  if(!drag.active)return;
+  drag.dx=x-drag.sx;drag.dy=y-drag.sy;
+  // Combine pan translation with the current zoom scale
+  mc.style.transform=`translate(${drag.dx}px,${drag.dy}px) scale(${currentScale})`;
+  svg.style.transform=`translate(${drag.dx}px,${drag.dy}px) scale(${currentScale})`;
+}
+function dragEnd(){
+  if(!drag.active)return;
+  drag.active=false;app.classList.remove('dragging');
+  drag.wasDrag=(Math.abs(drag.dx)>4||Math.abs(drag.dy)>4);
+  if(!drag.wasDrag){
+    mc.style.transform=`scale(${currentScale})`;
+    svg.style.transform=`scale(${currentScale})`;
+    return;
+  }
+  // Drag.dx is in screen pixels; divide by currentScale to get canvas pixels
+  offX+=drag.dx/currentScale;offY+=drag.dy/currentScale;
+  const n=Math.pow(2,intZ);
+  // Canvas center is at (pad+W/2, pad+H/2) in canvas coords
+  const cTx=(pad+W/2-offX)/256+oxT,cTy=(pad+H/2-offY)/256+oyT;
+  clng=cTx/n*360-180;
+  clat=(2*Math.atan(Math.exp(Math.PI*(1-2*cTy/n)))-Math.PI/2)*180/Math.PI;
+  drag.dx=0;drag.dy=0;initMap();
+}
+
+app.addEventListener('mousedown',e=>{if(e.button!==0)return;e.preventDefault();dragStart(e.clientX,e.clientY);});
+window.addEventListener('mousemove',e=>{dragMove(e.clientX,e.clientY);});
+window.addEventListener('mouseup',()=>{dragEnd();});
+app.addEventListener('touchstart',e=>{e.preventDefault();dragStart(e.touches[0].clientX,e.touches[0].clientY);},{passive:false});
+app.addEventListener('touchmove',e=>{e.preventDefault();dragMove(e.touches[0].clientX,e.touches[0].clientY);},{passive:false});
+app.addEventListener('touchend',()=>{dragEnd();});
+
+// ── SVG RENDER ───────────────────────────────────────────────
+function mk(tag,a){const el=document.createElementNS(NS,tag);for(const[k,v]of Object.entries(a))el.setAttribute(k,v);return el;}
+
+function render(){
+  svg.innerHTML='';
+  const d=mk('defs',{});
+  d.innerHTML=`<filter id="g2" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><filter id="g5" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+  svg.appendChild(d);
+
+  // ── PRE-COLLECT BADGE POSITIONS (for collision detection) ────────────────
+  const activeBadgeBBs=[],pendingBadges=[];
+  if(mode==='explore'){
+    sel.forEach(fId=>{
+      const fp=PORTS.find(p=>p.id===fId);if(!fp)return;
+      (ROUTES[fId]||[]).forEach(r=>{
+        if(hiddenLines.has(fId+'__'+r.to))return;
+        const tp=PORTS.find(p=>p.id===r.to);if(!tp)return;
+        if(tp.minZ&&Z<=tp.minZ)return;
+        if(r.time){const txy=proj(tp.lat,tp.lng);pendingBadges.push({port:tp,x:txy.x,y:txy.y,txt:r.time});activeBadgeBBs.push(computeBadgeBB(tp,txy.x,txy.y,r.time));}
+      });
+    });
+  }else if(mode==='route'&&rFrom&&rTo){
+    const tp=PORTS.find(p=>p.id===rTo);
+    if(tp){const rt=findRT(rFrom,rTo);if(rt){const txy=proj(tp.lat,tp.lng);pendingBadges.push({port:tp,x:txy.x,y:txy.y,txt:rt.time});activeBadgeBBs.push(computeBadgeBB(tp,txy.x,txy.y,rt.time));}}
+  }
+
+  // ── LINES ────────────────────────────────────────────────
+  if(mode==='explore'){
+    // Draw lines for every selected port
+    sel.forEach(fromId=>{
+      const fp=PORTS.find(p=>p.id===fromId);if(!fp)return;
+      const fxy=proj(fp.lat,fp.lng);
+      (ROUTES[fromId]||[]).forEach(r=>{
+        const tp=PORTS.find(p=>p.id===r.to);if(!tp)return;
+        const txy=proj(tp.lat,tp.lng);
+        const lineKey=fromId+'__'+r.to;
+
+        // Hidden lines are skipped entirely — reset by deselecting/reselecting the port
+        if(hiddenLines.has(lineKey)) return;
+
+        // Clickable group: invisible thick hit-area + visible dashed line
+        const lg=mk('g',{});
+        lg.style.cursor='pointer';
+        lg.style.pointerEvents='all';
+        // non-scaling-stroke keeps line thickness constant regardless of CSS scale
+        lg.appendChild(mk('line',{x1:fxy.x,y1:fxy.y,x2:txy.x,y2:txy.y,stroke:'transparent','stroke-width':'18','vector-effect':'non-scaling-stroke'}));
+        lg.appendChild(mk('line',{x1:fxy.x,y1:fxy.y,x2:txy.x,y2:txy.y,stroke:C.cyan500,'stroke-width':'1.5','stroke-dasharray':'6,4',opacity:'.65','vector-effect':'non-scaling-stroke'}));
+        lg.addEventListener('click',e=>{
+          e.stopPropagation();
+          hiddenLines.add(lineKey);
+          render();
+        });
+        svg.appendChild(lg);
+      });
+    });
+  } else {
+    // Route mode: single from→to line
+    if(rFrom&&rTo){
+      const fp=PORTS.find(p=>p.id===rFrom),tp=PORTS.find(p=>p.id===rTo);
+      if(fp&&tp){
+        const fxy=proj(fp.lat,fp.lng),txy=proj(tp.lat,tp.lng);
+        svg.appendChild(mk('line',{x1:fxy.x,y1:fxy.y,x2:txy.x,y2:txy.y,stroke:C.cyan500,'stroke-width':'1.5','stroke-dasharray':'6,4',opacity:'.65','vector-effect':'non-scaling-stroke'}));
+        const rt=findRT(rFrom,rTo);
+      }
+    }
+  }
+
+  // ── PORTS ────────────────────────────────────────────────
+  PORTS.forEach(port=>{
+    if(port.minZ && Z<=port.minZ) return; // hidden at or below this zoom threshold
+    const{x,y}=proj(port.lat,port.lng);
+    if(x<-60||x>cW+60||y<-60||y>cH+60)return;
+
+    const isSel = mode==='explore' && sel.includes(port.id);
+    const isFrom= mode==='route'   && port.id===rFrom;
+    const isTo  = mode==='route'   && port.id===rTo;
+    const isCon = mode==='explore' && sel.some(fid=>(ROUTES[fid]||[]).some(r=>r.to===port.id));
+    const active= isSel||isFrom||isTo;
+
+    const rBase=6; // tamaño único para todos los puertos
+    const r=rBase/currentScale; // counter-scale: visual dot stays constant size
+    const op=active?1:isCon?.95:.65;
+    const g=mk('g',{});g.style.cursor='pointer';g.style.pointerEvents='all';
+
+    if(active){
+      g.appendChild(mk('circle',{cx:x,cy:y,r:(rBase+8)/currentScale, fill:'none',stroke:C.cyan500,'stroke-width':'1.5',opacity:'.35','vector-effect':'non-scaling-stroke'}));
+      g.appendChild(mk('circle',{cx:x,cy:y,r:(rBase+15)/currentScale,fill:'none',stroke:C.cyan500,'stroke-width':'.8', opacity:'.12','vector-effect':'non-scaling-stroke'}));
+    }
+    const ci=mk('circle',{cx:x,cy:y,r,fill:C.cyan500,opacity:op,filter:'url(#g2)'});
+    g.appendChild(ci);
+    g.appendChild(mk('circle',{cx:x,cy:y,r:rBase*.4/currentScale,fill:'white'}));
+
+    const fs=port.labelFs||9,fw=port.labelFw||'500';
+    const lw=port.name.length*fs*.56+8;
+    // Counter-scale the label so it stays at a consistent visual size regardless of zoom
+    const cs=1/currentScale;
+    const lg=mk('g',{transform:`translate(${x},${y}) scale(${cs}) translate(${-x},${-y})`});
+    // labelLeft: place label to the left of the dot instead of the right
+    const ll=!!port.labelLeft;
+    const rx=ll ? x-rBase-4-lw : x+rBase+4;
+    const tx=ll ? x-rBase-6    : x+rBase+6;
+    const ta=ll ? 'end'         : 'start';
+    const loy=resolveLabel(port,x,y,activeBadgeBBs);
+    lg.appendChild(mk('rect',{x:rx,y:y-fs+loy,width:lw,height:fs+5,rx:2,fill:rgbaOf(C.navy900,C.labelBgAlpha)}));
+    const lb=mk('text',{x:tx,y:y+3.5+loy,'text-anchor':ta,'font-family':C.fontBold,'font-size':fs,'font-weight':fw,fill:`rgba(255,255,255,${active?1:isCon?.9:.72})`});
+    lb.textContent=port.name;
+    lg.appendChild(lb);
+    g.appendChild(lg);
+
+    g.addEventListener('click',e=>{e.stopPropagation();cp(port.id);});
+    g.addEventListener('mouseenter',()=>{ci.setAttribute('opacity',1);ci.setAttribute('filter','url(#g5)');});
+    g.addEventListener('mouseleave',()=>{ci.setAttribute('opacity',op);ci.setAttribute('filter','url(#g2)');});
+    svg.appendChild(g);
+  });
+  // ── BADGES rendered last (on top of all labels) ───────────────────────────
+  pendingBadges.forEach(b=>badgeBelowLabel(b.port,b.x,b.y,b.txt));
+}
+
+// ── COLLISION HELPERS ─────────────────────────────────────────────────────
+// All bounding boxes are computed in SCREEN pixels.
+// loy is in screen pixels (counter-scale group × CSS scale = 1:1).
+function computeBadgeBB(port,x,y,txt){
+  const cS=currentScale,rBase=6,fs=port.labelFs||9;
+  const lw=port.name.length*fs*.56+8;
+  const ll=!!port.labelLeft,loy=port.labelOffsetY||0;
+  const rx=ll?x-rBase-4-lw:x+rBase+4;
+  const bx=x*cS+(rx+lw/2-x), by=y*cS+(5+loy+10);
+  const bw=txt.length*5.4+14;
+  return{left:bx-bw/2,top:by-9,right:bx+bw/2,bottom:by+8};
+}
+function computeLabelBB(port,x,y,loy){
+  const cS=currentScale,rBase=6,fs=port.labelFs||9;
+  const lw=port.name.length*fs*.56+8;
+  const ll=!!port.labelLeft,rx=ll?x-rBase-4-lw:x+rBase+4;
+  return{left:x*cS+(rx-x),top:y*cS+(-fs+loy),right:x*cS+(rx+lw-x),bottom:y*cS+(5+loy)};
+}
+function bbOverlap(a,b){return a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;}
+function resolveLabel(port,x,y,badgeBBs){
+  let loy=port.labelOffsetY||0;
+  if(!badgeBBs.length)return loy;
+  const cS=currentScale,fs=port.labelFs||9;
+  for(let i=0;i<8;i++){
+    const lb=computeLabelBB(port,x,y,loy);
+    const hit=badgeBBs.find(b=>bbOverlap(lb,b));
+    if(!hit)break;
+    const lbMidY=(lb.top+lb.bottom)/2,hitMidY=(hit.top+hit.bottom)/2;
+    if(hitMidY>lbMidY){
+      // Badge is below label → push label UP (label bottom clears badge top with 3px gap)
+      loy=hit.top-6-y*cS-5;
+    }else{
+      // Badge is above label → push label DOWN (label top clears badge bottom with 3px gap)
+      loy=hit.bottom+3-y*cS+fs;
+    }
+  }
+  return loy;
+}
+function badgeBelowLabel(port,x,y,txt){
+  // Calcula el centro horizontal del label rect del puerto destino
+  // y lo ubica debajo del texto, en lugar de debajo del dot o en la mitad de la línea
+  const rBase=6, fs=port.labelFs||9;
+  const lw=port.name.length*fs*.56+8;
+  const ll=!!port.labelLeft;
+  const loy=port.labelOffsetY||0;
+  const rx=ll ? x-rBase-4-lw : x+rBase+4;
+  const cs=1/currentScale;
+  // Centro horizontal del label proyectado a canvas coords (counter-scaled)
+  const bx=x+(rx+lw/2-x)*cs;
+  // Fondo del rect del label (y+5+loy en espacio counter-scaled) + 8px de gap
+  const by=y+(5+loy+10)*cs;
+  const bw=txt.length*5.4+14;
+  const bg=mk('g',{transform:`translate(${bx},${by}) scale(${cs}) translate(${-bx},${-by})`});
+  bg.appendChild(mk('rect',{x:bx-bw/2,y:by-9,width:bw,height:17,rx:8,fill:C.cyan500,filter:'url(#g2)'}));
+  const bt=mk('text',{x:bx,y:by+3.5,'text-anchor':'middle','font-family':C.fontBold,'font-size':'7.5','font-weight':'700',fill:C.navy700});
+  bt.textContent=txt;bg.appendChild(bt);
+  svg.appendChild(bg);
+}
+function badgeAt(x,y,txt){
+  const bw=txt.length*5.4+14;
+  const cs=1/currentScale;
+  const bg=mk('g',{transform:`translate(${x},${y}) scale(${cs}) translate(${-x},${-y})`});
+  bg.appendChild(mk('rect',{x:x-bw/2,y:y-9,width:bw,height:17,rx:8,fill:C.cyan500,filter:'url(#g2)'}));
+  const bt=mk('text',{x:x,y:y+3.5,'text-anchor':'middle','font-family':C.fontBold,'font-size':'7.5','font-weight':'700',fill:C.navy700});
+  bt.textContent=txt;bg.appendChild(bt);
+  svg.appendChild(bg);
+}
+function badge(x1,y1,x2,y2,txt){
+  const mx=(x1+x2)/2,my=(y1+y2)/2,bw=txt.length*5.4+14;
+  // Counter-scale the badge so it stays visually constant size across all zoom levels
+  const cs=1/currentScale;
+  const bg=mk('g',{transform:`translate(${mx},${my}) scale(${cs}) translate(${-mx},${-my})`});
+  bg.appendChild(mk('rect',{x:mx-bw/2,y:my-9,width:bw,height:17,rx:8,fill:C.cyan500,filter:'url(#g2)'}));
+  const bt=mk('text',{x:mx,y:my+3.5,'text-anchor':'middle','font-family':C.fontBold,'font-size':'7.5','font-weight':'700',fill:C.navy700});
+  bt.textContent=txt;bg.appendChild(bt);
+  svg.appendChild(bg);
+}
+
+// ── INTERACTION ───────────────────────────────────────────────
+app.addEventListener('click',()=>{
+  if(drag.wasDrag){drag.wasDrag=false;return;}
+  if(mode==='explore'){
+    sel=[];lastSel=null;
+    hiddenLines.clear();
+    render();upE();
+  }
+});
+
+function cp(id){
+  if(drag.wasDrag){drag.wasDrag=false;return;}
+  if(mode==='explore'){
+    const idx=sel.indexOf(id);
+    if(idx>=0){
+      sel.splice(idx,1);
+      // Remove hidden-line entries for this port
+      for(const k of [...hiddenLines]) if(k.startsWith(id+'__')) hiddenLines.delete(k);
+      lastSel=sel.length>0?sel[sel.length-1]:null;
+    }else{
+      sel.push(id);
+      lastSel=id;
+    }
+    render();upE();
+  }else{
+    // Route mode
+    if(!document.getElementById('rf').value){
+      document.getElementById('rf').value=id;rFrom=id;
+    }else if(!document.getElementById('rt2').value&&id!==rFrom){
+      document.getElementById('rt2').value=id;rTo=id;
+    }else{
+      document.getElementById('rf').value=id;rFrom=id;
+      document.getElementById('rt2').value='';rTo=null;
+      document.getElementById('rresult').style.display='none';
+    }
+    if(rFrom&&rTo)sr();
+    render();
+  }
+}
+
+// ── MODE ──────────────────────────────────────────────────────
+function sm(m){
+  mode=m;sel=[];lastSel=null;rFrom=null;rTo=null;
+  hiddenLines.clear();
+  document.getElementById('emode').style.display=m==='explore'?'block':'none';
+  document.getElementById('rmode').style.display=m==='route'?'block':'none';
+  document.getElementById('t0').classList.toggle('on',m==='explore');
+  document.getElementById('t1').classList.toggle('on',m==='route');
+  document.getElementById('rresult').style.display='none';
+  document.getElementById('rf').value='';document.getElementById('rt2').value='';
+  render();if(m==='explore')upE();
+}
+
+// ── EXPLORE PANEL — panel estático, no requiere actualización dinámica ──
+function upE(){ /* panel fijo, no-op */ }
+
+// ── ROUTE SEARCH ──────────────────────────────────────────────
+function findRT(a,b){
+  if(ROUTES[a]){const r=ROUTES[a].find(r=>r.to===b);if(r)return r;}
+  if(ROUTES[b]){const r=ROUTES[b].find(r=>r.to===a);if(r)return r;}
+  return null;
+}
+function findD(a,b){
+  if(DISTS[a]&&DISTS[a][b]!=null)return DISTS[a][b];
+  if(DISTS[b]&&DISTS[b][a]!=null)return DISTS[b][a];
+  return null;
+}
+function sr(){
+  const t=TX[lang];
+  rFrom=document.getElementById('rf').value;rTo=document.getElementById('rt2').value;
+  const re=document.getElementById('rresult');re.style.display='block';
+  if(!rFrom||!rTo||rFrom===rTo){re.innerHTML='';render();return;}
+  const rt=findRT(rFrom,rTo),dv=findD(rFrom,rTo);
+  if(!rt&&!dv){re.innerHTML=`<div class="nodata">${t.noroute}</div>`;render();return;}
+  let h='';
+  if(rt)h+=`<div class="rcrd"><div class="rclbl">${t.sh1}</div><div class="rcval">${rt.time}</div></div>`;
+  if(dv){
+    const dvStr=typeof dv==='object'?`${dv.km} Km <span style="font-size:11px;opacity:.7">/ ${dv.nm} NM</span>`:`${dv} NM`;
+    h+=`<div class="rcrd"><div class="rclbl">${t.sh2}</div><div class="rcval">${dvStr}</div></div>`;
+  }
+  re.innerHTML=h;render();
+}
+document.getElementById('rf').addEventListener('change',e=>{rFrom=e.target.value;render();if(rFrom&&rTo)sr();});
+document.getElementById('rt2').addEventListener('change',e=>{rTo=e.target.value;render();if(rFrom&&rTo)sr();});
+
+// ── LANGUAGE ──────────────────────────────────────────────────
+function setLang(l){
+  lang=l;document.querySelectorAll('.lb').forEach(b=>b.classList.toggle('on',b.textContent.toLowerCase()===l));
+  const t=TX[l];
+  document.getElementById('t0').textContent=t.t0;
+  document.getElementById('t1').textContent=t.t1;
+  document.getElementById('lf').textContent=t.lf;
+  document.getElementById('lt').textContent=t.lt;
+  document.getElementById('rbtn').textContent=t.rbtn;
+  document.getElementById('lh').textContent=t.lh;
+  document.getElementById('ll1').textContent=t.ll1;
+  document.getElementById('ll3').textContent=t.ll3;
+  fillSels(l);upE();if(rFrom&&rTo)sr();
+}
+function fillSels(l){
+  const t=TX[l],sorted=[...PORTS].sort((a,b)=>a.name.localeCompare(b.name));
+  ['rf','rt2'].forEach(id=>{
+    const s=document.getElementById(id),val=s.value;
+    s.innerHTML=`<option value="">${t.sp}</option>`+sorted.map(p=>`<option value="${p.id}"${p.id===val?' selected':''}>${p.name}</option>`).join('');
+  });
+}
+
+// ── BOOT ─────────────────────────────────────────────────────
+
+// ===== Map lifecycle integration with the deck =====
+(function(){
+  const slide7 = document.querySelector('.slide[data-n="7"]');
+  let mapInitialized = false;
+  let initPending = false;
+
+  function tryInitMap() {
+    if (initPending) return;
+    if (!slide7 || !slide7.classList.contains('active')) return;
+    const app = document.getElementById('app');
+    if (!app || app.offsetWidth === 0) return;
+    initPending = true;
+    requestAnimationFrame(()=>{
+      try {
+        fillSels('en');
+        setLang('en');
+        initMap();
+        mapInitialized = true;
+      } catch(e) { console.warn('Map init failed:', e); }
+      initPending = false;
+    });
+  }
+
+  function refreshMapIfActive() {
+    if (!mapInitialized) { tryInitMap(); return; }
+    if (!slide7 || !slide7.classList.contains('active')) return;
+    // Re-read colors and redraw
+    if (typeof readColors === 'function' && typeof initMap === 'function') {
+      C = readColors();
+      initMap();
+    }
+  }
+
+  // Watch for slide 7 becoming visible
+  if (slide7) {
+    new MutationObserver(tryInitMap).observe(slide7, { attributes:true, attributeFilter:['class'] });
+  }
+
+  // Resize: only if slide 7 is active and already initialized
+  window.addEventListener('resize', () => {
+    if (mapInitialized && slide7 && slide7.classList.contains('active')) {
+      try { initMap(); } catch(e){}
+    }
+  });
+
+  // Hook outer customizer's apply functions to trigger map redraw
+  function hookApply(name) {
+    const orig = window[name];
+    if (typeof orig !== 'function') return;
+    window[name] = function(key) {
+      orig(key);
+      // Wait one frame so CSS vars are committed before reading them
+      requestAnimationFrame(refreshMapIfActive);
+    };
+  }
+
+  // Hook AFTER outer customizer has wired its apply functions (DOMContentLoaded done)
+  window.addEventListener('load', () => {
+    hookApply('applyPalette');
+    hookApply('applyFont');
+    // Also: if slide 7 happens to be the initial active slide, try to init now
+    tryInitMap();
+  });
+})();
+</script>
+</body>
+</html>
