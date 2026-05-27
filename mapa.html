@@ -32,6 +32,9 @@
   --cyan-300: var(--color-accent-secondary);
   --gray-500: #8B97A8;
 
+  /* Badge text colour — defaults to bg-primary for WCAG contrast on accent badges */
+  --color-badge-text: var(--color-bg-primary);
+
   /* Opacity of the per-label background rect on the map (0 = transparent) */
   --label-bg-alpha: 0.85;
 }
@@ -123,12 +126,12 @@ canvas{position:absolute;top:0;left:0;will-change:transform;}
 .rsel{width:100%;padding:5px 7px;background:rgba(0,12,40,.8);border:1px solid rgba(var(--color-accent-primary-rgb),.22);border-radius:4px;color:#fff;font-family:var(--font-body);font-size:9.5px;margin-bottom:8px;outline:none;cursor:pointer;}
 .rsel:focus{border-color:var(--cyan-500);}
 .rsel option{background:#001237;color:#fff;}
-#rbtn{width:100%;padding:7px;background:var(--cyan-500);border:none;border-radius:4px;color:var(--navy-700);font-family:var(--font-display-bold);font-size:9px;font-weight:700;letter-spacing:1px;cursor:pointer;margin-bottom:10px;transition:background .15s;}
-#rbtn:hover{background:var(--cyan-700);color:#fff;}
+#rbtn{width:100%;padding:7px;background:var(--cyan-500);border:none;border-radius:4px;color:var(--color-badge-text, var(--navy-700));font-family:var(--font-display-bold);font-size:9px;font-weight:700;letter-spacing:1px;cursor:pointer;margin-bottom:10px;transition:background .15s;}
+#rbtn:hover{background:var(--color-accent-tertiary);color:#fff;}
 #rresult{display:none;}
 .rcrd{padding:8px 10px;background:rgba(var(--color-accent-primary-rgb),.07);border-left:3px solid var(--cyan-500);border-radius:0 4px 4px 0;margin-bottom:5px;}
 .rclbl{font-family:var(--font-display-bold);color:var(--gray-500);font-size:6.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2px;}
-.rcval{font-family:var(--font-display-bold);color:var(--cyan-300);font-size:16px;font-weight:700;}
+.rcval{font-family:var(--font-display-bold);color:var(--color-accent-primary);font-size:16px;font-weight:700;}
 .nodata{font-family:var(--font-body);color:rgba(255,255,255,.35);font-size:9px;line-height:1.6;}
 /* multi-select indicator */
 .mcount{display:inline-block;margin-left:6px;background:rgba(var(--color-accent-primary-rgb),.18);border:1px solid rgba(var(--color-accent-primary-rgb),.35);color:var(--cyan-500);font-family:var(--font-display-bold);font-size:6px;font-weight:700;letter-spacing:1px;padding:1px 5px;border-radius:8px;text-transform:uppercase;vertical-align:middle;}
@@ -283,6 +286,7 @@ function readColors(){
     fontBold: (g('--font-display-bold') || "'Montserrat',sans-serif").replace(/^['"]|['"]$/g,''),
     fontBody: (g('--font-body')        || "'Raleway',sans-serif").replace(/^['"]|['"]$/g,''),
     labelBgAlpha: parseFloat(g('--label-bg-alpha') || '0.85'),
+    badgeText: g('--color-badge-text') || g('--color-bg-primary') || '#001237',
   };
 }
 function hexToRgb(h){const c=h.replace('#','').trim();return{r:parseInt(c.slice(0,2),16),g:parseInt(c.slice(2,4),16),b:parseInt(c.slice(4,6),16)};}
@@ -658,7 +662,7 @@ function badgeBelowLabel(port,x,y,txt){
   const bw=txt.length*5.4+14;
   const bg=mk('g',{transform:`translate(${bx},${by}) scale(${cs}) translate(${-bx},${-by})`});
   bg.appendChild(mk('rect',{x:bx-bw/2,y:by-9,width:bw,height:17,rx:8,fill:C.cyan500,filter:'url(#g2)'}));
-  const bt=mk('text',{x:bx,y:by+3.5,'text-anchor':'middle','font-family':C.fontBold,'font-size':'7.5','font-weight':'700',fill:C.navy700});
+  const bt=mk('text',{x:bx,y:by+3.5,'text-anchor':'middle','font-family':C.fontBold,'font-size':'7.5','font-weight':'700',fill:C.badgeText});
   bt.textContent=txt;bg.appendChild(bt);
   svg.appendChild(bg);
 }
@@ -667,7 +671,7 @@ function badgeAt(x,y,txt){
   const cs=1/currentScale;
   const bg=mk('g',{transform:`translate(${x},${y}) scale(${cs}) translate(${-x},${-y})`});
   bg.appendChild(mk('rect',{x:x-bw/2,y:y-9,width:bw,height:17,rx:8,fill:C.cyan500,filter:'url(#g2)'}));
-  const bt=mk('text',{x:x,y:y+3.5,'text-anchor':'middle','font-family':C.fontBold,'font-size':'7.5','font-weight':'700',fill:C.navy700});
+  const bt=mk('text',{x:x,y:y+3.5,'text-anchor':'middle','font-family':C.fontBold,'font-size':'7.5','font-weight':'700',fill:C.badgeText});
   bt.textContent=txt;bg.appendChild(bt);
   svg.appendChild(bg);
 }
@@ -677,7 +681,7 @@ function badge(x1,y1,x2,y2,txt){
   const cs=1/currentScale;
   const bg=mk('g',{transform:`translate(${mx},${my}) scale(${cs}) translate(${-mx},${-my})`});
   bg.appendChild(mk('rect',{x:mx-bw/2,y:my-9,width:bw,height:17,rx:8,fill:C.cyan500,filter:'url(#g2)'}));
-  const bt=mk('text',{x:mx,y:my+3.5,'text-anchor':'middle','font-family':C.fontBold,'font-size':'7.5','font-weight':'700',fill:C.navy700});
+  const bt=mk('text',{x:mx,y:my+3.5,'text-anchor':'middle','font-family':C.fontBold,'font-size':'7.5','font-weight':'700',fill:C.badgeText});
   bt.textContent=txt;bg.appendChild(bt);
   svg.appendChild(bg);
 }
@@ -842,6 +846,7 @@ const PALETTES = {
     '--color-accent-secondary':'#7FCBED','--color-accent-tertiary':'#177AA3',
     '--color-text-primary':'#FFFFFF','--color-text-muted':'#D4ECF9',
     '--label-bg-alpha':'0.85',
+    '--color-badge-text':'#001237',
   },
   a: { name:'A · Marítimo + tierra',
     '--color-bg-primary':'#012340','--color-bg-surface':'#10425D',
@@ -850,6 +855,7 @@ const PALETTES = {
     '--color-accent-secondary':'#8C6542','--color-accent-tertiary':'#10425D',
     '--color-text-primary':'#FFFFFF','--color-text-muted':'#D9B282',
     '--label-bg-alpha':'0',
+    '--color-badge-text':'#012340',
   },
   b: { name:'B · Innovación tech',
     '--color-bg-primary':'#000A1F','--color-bg-surface':'#00236B',
@@ -858,6 +864,7 @@ const PALETTES = {
     '--color-accent-secondary':'#05DBF2','--color-accent-tertiary':'#00236B',
     '--color-text-primary':'#FFFFFF','--color-text-muted':'#EAFCFF',
     '--label-bg-alpha':'0.85',
+    '--color-badge-text':'#000A1F',
   },
   c: { name:'C · Azules + verde agua',
     '--color-bg-primary':'#001237','--color-bg-surface':'#1E50C7',
@@ -866,6 +873,7 @@ const PALETTES = {
     '--color-accent-secondary':'#527FD9','--color-accent-tertiary':'#1E50C7',
     '--color-text-primary':'#FFFFFF','--color-text-muted':'#F2F2F2',
     '--label-bg-alpha':'0',
+    '--color-badge-text':'#001237',
   },
   d: { name:'D · Azul + naranja',
     '--color-bg-primary':'#021F59','--color-bg-surface':'#0540F2',
@@ -874,6 +882,7 @@ const PALETTES = {
     '--color-accent-secondary':'#E3B7A1','--color-accent-tertiary':'#0540F2',
     '--color-text-primary':'#FFFFFF','--color-text-muted':'#E7E6E4',
     '--label-bg-alpha':'0.85',
+    '--color-badge-text':'#021F59',
   },
   e: { name:'E · Petróleo + lima',
     '--color-bg-primary':'#002333','--color-bg-surface':'#2F4959',
@@ -882,6 +891,7 @@ const PALETTES = {
     '--color-accent-secondary':'#C0D6EB','--color-accent-tertiary':'#2F4959',
     '--color-text-primary':'#FFFFFF','--color-text-muted':'#C0D6EB',
     '--label-bg-alpha':'0',
+    '--color-badge-text':'#002333',
   },
 };
 
@@ -928,7 +938,9 @@ function refreshMap(){
 
 function applyPalette(key){
   const p=PALETTES[key]||PALETTES.original;
-  applyVars(p); renderSwatches(p);
+  applyVars(p);
+  document.documentElement.setAttribute('data-palette', key);
+  renderSwatches(p);
   localStorage.setItem('map-palette',key);
   refreshMap();
 }

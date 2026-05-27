@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TT Marine - WCAG Palette Contrast Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-body: #0B0F1A;
+    --bg-card: #141925;
+    --bg-surface: #1C2233;
+    --border: #2A3146;
+    --text-primary: #E8ECF4;
+    --text-secondary: #8B95AB;
+    --text-muted: #5C6478;
+    --green: #34D399;
+    --yellow: #FBBF24;
+    --red: #F87171;
+    --blue: #60A5FA;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-body);
+    color: var(--text-primary);
+    line-height: 1.6;
+    padding: 2rem;
+    min-height: 100vh;
+  }
+
+  .container { max-width: 1400px; margin: 0 auto; }
+
+  header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.5rem;
+  }
+
+  header p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+
+  .legend {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .palette-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.75rem;
+    margin-bottom: 2rem;
+  }
+
+  .palette-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+  }
+
+  .palette-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-transform: capitalize;
+  }
+
+  .palette-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.75rem;
+    border-radius: 100px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .badge-pass { background: rgba(52, 211, 153, 0.15); color: var(--green); }
+  .badge-partial { background: rgba(251, 191, 36, 0.15); color: var(--yellow); }
+  .badge-fail { background: rgba(248, 113, 113, 0.15); color: var(--red); }
+
+  .swatches {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+
+  .swatch-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--bg-surface);
+    padding: 0.4rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.78rem;
+  }
+
+  .swatch-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.1);
+    flex-shrink: 0;
+  }
+
+  .swatch-label {
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+  }
+
+  .swatch-hex {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text-primary);
+  }
+
+  .swatch-lum {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+  }
+
+  .contrast-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .contrast-table th {
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .contrast-table td {
+    padding: 0.65rem 0.75rem;
+    border-bottom: 1px solid rgba(42, 49, 70, 0.5);
+    vertical-align: middle;
+  }
+
+  .contrast-table tr:last-child td { border-bottom: none; }
+
+  .pair-preview {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-right: 0.5rem;
+  }
+
+  .pair-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .ratio-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .compliance-badge {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    letter-spacing: 0.02em;
+  }
+
+  .compliance-aa { background: rgba(52, 211, 153, 0.15); color: var(--green); }
+  .compliance-aa-large { background: rgba(251, 191, 36, 0.15); color: var(--yellow); }
+  .compliance-fail { background: rgba(248, 113, 113, 0.15); color: var(--red); }
+
+  .recommendations {
+    background: var(--bg-surface);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+  }
+
+  .recommendations h4 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+  }
+
+  .rec-list { list-style: none; }
+
+  .rec-list li {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    padding: 0.3rem 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .rec-list li::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin-top: 0.45rem;
+    flex-shrink: 0;
+  }
+
+  .rec-list li.rec-good::before { background: var(--green); }
+  .rec-list li.rec-warn::before { background: var(--yellow); }
+  .rec-list li.rec-bad::before { background: var(--red); }
+
+  .visual-demo {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .demo-chip {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  .demo-chip-label {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    margin-bottom: 0.15rem;
+  }
+
+  #summary-section {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+  }
+
+  #summary-section h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  #summary-section p {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+
+  .json-block {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    line-height: 1.7;
+    color: var(--text-primary);
+    overflow-x: auto;
+    white-space: pre-wrap;
+    position: relative;
+  }
+
+  .copy-btn {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .copy-btn:hover { color: var(--text-primary); border-color: var(--text-muted); }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  @media (max-width: 900px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    body { padding: 1rem; }
+  }
+
+  .comparison-bar {
+    display: flex;
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .comparison-bar span {
+    flex: 1;
+  }
+
+  .section-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+    margin-top: 0.25rem;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>TT Marine -- WCAG Palette Contrast Analysis</h1>
+    <p>Automated contrast ratio testing for 6 candidate palettes. All values computed per WCAG 2.1 guidelines.</p>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> AA Pass (ratio >= 4.5:1)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div> AA Large Only (ratio >= 3.0:1)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Fail (ratio < 3.0:1)</div>
+    </div>
+  </header>
+
+  <div id="palette-cards"></div>
+
+  <div id="summary-section">
+    <h2>Summary -- PALETTE_OVERRIDES Config</h2>
+    <p>Copy-paste the JSON below into your configuration. Each entry contains the computed badge text color, accent usability flags, and luminance classification.</p>
+    <div class="json-block" id="summary-json">
+      <button class="copy-btn" onclick="copyJSON()">Copy JSON</button>
+      <code id="json-output"></code>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---------------------------------------------------------------------------
+// Palette definitions
+// ---------------------------------------------------------------------------
+const PALETTES = {
+  original: {
+    bgPrimary: '#001237', bgSurface: '#061B44',
+    accentPrimary: '#28AAE0', accentSecondary: '#7FCBED',
+    accentTertiary: '#177AA3', textPrimary: '#FFFFFF', textMuted: '#D4ECF9'
+  },
+  a: {
+    bgPrimary: '#012340', bgSurface: '#10425D',
+    accentPrimary: '#0DAFEE', accentSecondary: '#8C6542',
+    accentTertiary: '#10425D', textPrimary: '#FFFFFF', textMuted: '#D9B282'
+  },
+  b: {
+    bgPrimary: '#000A1F', bgSurface: '#00236B',
+    accentPrimary: '#0DAFEE', accentSecondary: '#05DBF2',
+    accentTertiary: '#00236B', textPrimary: '#FFFFFF', textMuted: '#EAFCFF'
+  },
+  c: {
+    bgPrimary: '#001237', bgSurface: '#1E50C7',
+    accentPrimary: '#58E6DB', accentSecondary: '#527FD9',
+    accentTertiary: '#1E50C7', textPrimary: '#FFFFFF', textMuted: '#F2F2F2'
+  },
+  d: {
+    bgPrimary: '#021F59', bgSurface: '#0540F2',
+    accentPrimary: '#F98513', accentSecondary: '#E3B7A1',
+    accentTertiary: '#0540F2', textPrimary: '#FFFFFF', textMuted: '#E7E6E4'
+  },
+  e: {
+    bgPrimary: '#002333', bgSurface: '#2F4959',
+    accentPrimary: '#DDFE55', accentSecondary: '#C0D6EB',
+    accentTertiary: '#2F4959', textPrimary: '#FFFFFF', textMuted: '#F2F2F2'
+  }
+};
+
+// ---------------------------------------------------------------------------
+// WCAG helpers
+// ---------------------------------------------------------------------------
+function hexToRGB(hex) {
+  hex = hex.replace('#', '');
+  return {
+    r: parseInt(hex.substring(0, 2), 16),
+    g: parseInt(hex.substring(2, 4), 16),
+    b: parseInt(hex.substring(4, 6), 16)
+  };
+}
+
+function sRGBtoLinear(c) {
+  const s = c / 255;
+  return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+}
+
+function relativeLuminance(hex) {
+  const { r, g, b } = hexToRGB(hex);
+  return 0.2126 * sRGBtoLinear(r) + 0.7152 * sRGBtoLinear(g) + 0.0722 * sRGBtoLinear(b);
+}
+
+function contrastRatio(hex1, hex2) {
+  const l1 = relativeLuminance(hex1);
+  const l2 = relativeLuminance(hex2);
+  const lighter = Math.max(l1, l2);
+  const darker = Math.min(l1, l2);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+function complianceLevel(ratio) {
+  if (ratio >= 4.5) return 'AA';
+  if (ratio >= 3.0) return 'AA-Large';
+  return 'Fail';
+}
+
+function complianceClass(level) {
+  if (level === 'AA') return 'compliance-aa';
+  if (level === 'AA-Large') return 'compliance-aa-large';
+  return 'compliance-fail';
+}
+
+function lumClass(lum) {
+  if (lum > 0.5) return 'high';
+  if (lum >= 0.15) return 'moderate';
+  return 'low';
+}
+
+// ---------------------------------------------------------------------------
+// Analysis engine
+// ---------------------------------------------------------------------------
+function analyzePalette(key, pal) {
+  const lums = {};
+  for (const [name, hex] of Object.entries(pal)) {
+    lums[name] = relativeLuminance(hex);
+  }
+
+  const pairs = [
+    { label: 'accentPrimary on bgPrimary', fg: 'accentPrimary', bg: 'bgPrimary', desc: 'Accent text on dark background' },
+    { label: 'textPrimary on accentPrimary', fg: 'textPrimary', bg: 'accentPrimary', desc: 'White text on accent badges/buttons' },
+    { label: 'bgPrimary on accentPrimary', fg: 'bgPrimary', bg: 'accentPrimary', desc: 'Dark text on accent badges/buttons' },
+    { label: 'accentSecondary on bgPrimary', fg: 'accentSecondary', bg: 'bgPrimary', desc: 'Secondary color readability' },
+    { label: 'textMuted on bgPrimary', fg: 'textMuted', bg: 'bgPrimary', desc: 'Muted text readability' }
+  ];
+
+  const results = pairs.map(p => {
+    const ratio = contrastRatio(pal[p.fg], pal[p.bg]);
+    const level = complianceLevel(ratio);
+    return { ...p, ratio, level, fgHex: pal[p.fg], bgHex: pal[p.bg] };
+  });
+
+  // Recommendations
+  const accentLum = lums.accentPrimary;
+  const accentLumLabel = lumClass(accentLum);
+  const whiteOnAccent = contrastRatio('#FFFFFF', pal.accentPrimary);
+  const darkOnAccent = contrastRatio(pal.bgPrimary, pal.accentPrimary);
+  const badgeTextColor = darkOnAccent >= whiteOnAccent ? pal.bgPrimary : '#FFFFFF';
+  const badgeTextRatio = Math.max(darkOnAccent, whiteOnAccent);
+  const accentOnBgRatio = contrastRatio(pal.accentPrimary, pal.bgPrimary);
+
+  const recs = [];
+  // Badge text
+  if (badgeTextColor === pal.bgPrimary) {
+    recs.push({ cls: darkOnAccent >= 4.5 ? 'rec-good' : 'rec-warn', text: `Badge text: use dark (${pal.bgPrimary}) -- ratio ${darkOnAccent.toFixed(2)}:1. White would be ${whiteOnAccent.toFixed(2)}:1.` });
+  } else {
+    recs.push({ cls: whiteOnAccent >= 4.5 ? 'rec-good' : 'rec-warn', text: `Badge text: use white (#FFFFFF) -- ratio ${whiteOnAccent.toFixed(2)}:1. Dark would be ${darkOnAccent.toFixed(2)}:1.` });
+  }
+
+  // Large text
+  if (accentOnBgRatio >= 3.0) {
+    recs.push({ cls: 'rec-good', text: `Accent works for large display text on dark bg (${accentOnBgRatio.toFixed(2)}:1 >= 3.0).` });
+  } else {
+    recs.push({ cls: 'rec-bad', text: `Accent fails for large text on dark bg (${accentOnBgRatio.toFixed(2)}:1 < 3.0).` });
+  }
+
+  // Small text
+  if (accentOnBgRatio >= 4.5) {
+    recs.push({ cls: 'rec-good', text: `Accent works for small body text on dark bg (${accentOnBgRatio.toFixed(2)}:1 >= 4.5).` });
+  } else {
+    recs.push({ cls: 'rec-bad', text: `Accent fails for small body text on dark bg (${accentOnBgRatio.toFixed(2)}:1 < 4.5).` });
+  }
+
+  // Luminance weight
+  const lumNote = accentLumLabel === 'high'
+    ? 'High-luminance accent -- will feel bright/saturated. May wash out on light surfaces.'
+    : accentLumLabel === 'moderate'
+    ? 'Moderate-luminance accent -- good balance between vibrancy and contrast.'
+    : 'Low-luminance accent -- may lack visibility on dark backgrounds.';
+  recs.push({ cls: accentLumLabel === 'low' ? 'rec-bad' : (accentLumLabel === 'moderate' ? 'rec-good' : 'rec-warn'), text: `Accent luminance: ${accentLum.toFixed(4)} (${accentLumLabel}). ${lumNote}` });
+
+  // Muted text check
+  const mutedRatio = contrastRatio(pal.textMuted, pal.bgPrimary);
+  if (mutedRatio >= 4.5) {
+    recs.push({ cls: 'rec-good', text: `Muted text passes AA on dark bg (${mutedRatio.toFixed(2)}:1).` });
+  } else if (mutedRatio >= 3.0) {
+    recs.push({ cls: 'rec-warn', text: `Muted text only passes AA-Large on dark bg (${mutedRatio.toFixed(2)}:1).` });
+  } else {
+    recs.push({ cls: 'rec-bad', text: `Muted text fails contrast on dark bg (${mutedRatio.toFixed(2)}:1).` });
+  }
+
+  // Overall pass count
+  const aaCount = results.filter(r => r.level === 'AA').length;
+  const overallBadge = aaCount >= 4 ? 'pass' : (aaCount >= 2 ? 'partial' : 'fail');
+
+  // Generate notes
+  const notes = [];
+  if (accentLumLabel === 'high') notes.push(`${accentLumLabel}-luminance accent`);
+  if (whiteOnAccent < 3.0) notes.push('white text on accent bg fails');
+  if (darkOnAccent > whiteOnAccent) notes.push('use dark badge text');
+  else notes.push('use white badge text');
+  if (accentOnBgRatio < 4.5 && accentOnBgRatio >= 3.0) notes.push('accent only for large text');
+  if (accentOnBgRatio < 3.0) notes.push('accent too dark for text');
+
+  return {
+    key, pal, lums, results, recs, overallBadge, aaCount,
+    summary: {
+      key,
+      badgeTextColor,
+      accentOnBg: { largeText: accentOnBgRatio >= 3.0, smallText: accentOnBgRatio >= 4.5 },
+      accentLuminance: accentLumLabel,
+      notes: notes.join('. ') + '.'
+    }
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Rendering
+// ---------------------------------------------------------------------------
+function renderCard(analysis) {
+  const { key, pal, lums, results, recs, overallBadge, aaCount } = analysis;
+
+  const colorNames = {
+    bgPrimary: 'BG Primary', bgSurface: 'BG Surface',
+    accentPrimary: 'Accent Primary', accentSecondary: 'Accent Secondary',
+    accentTertiary: 'Accent Tertiary', textPrimary: 'Text Primary', textMuted: 'Text Muted'
+  };
+
+  let html = `<div class="palette-card">`;
+  html += `<div class="palette-header">`;
+  html += `<span class="palette-name">Palette ${key === 'original' ? 'Original' : key.toUpperCase()}</span>`;
+  html += `<span class="palette-badge badge-${overallBadge}">${aaCount}/5 AA Pass</span>`;
+  html += `</div>`;
+
+  // Swatches
+  html += `<div class="section-title">Colors & Luminance</div>`;
+  html += `<div class="swatches">`;
+  for (const [name, hex] of Object.entries(pal)) {
+    html += `<div class="swatch-item">
+      <div class="swatch-color" style="background:${hex}"></div>
+      <div>
+        <div class="swatch-label">${colorNames[name]}</div>
+        <div class="swatch-hex">${hex.toUpperCase()}</div>
+        <div class="swatch-lum">L: ${lums[name].toFixed(4)}</div>
+      </div>
+    </div>`;
+  }
+  html += `</div>`;
+
+  // Color bar
+  html += `<div class="comparison-bar">`;
+  for (const hex of Object.values(pal)) {
+    html += `<span style="background:${hex}"></span>`;
+  }
+  html += `</div>`;
+
+  // Visual demos
+  html += `<div class="section-title" style="margin-top:1rem">Visual Preview</div>`;
+  html += `<div class="visual-demo">`;
+  html += `<div>
+    <div class="demo-chip-label">Accent on BG</div>
+    <div class="demo-chip" style="background:${pal.bgPrimary};color:${pal.accentPrimary}">Sample Text</div>
+  </div>`;
+  html += `<div>
+    <div class="demo-chip-label">White on Accent</div>
+    <div class="demo-chip" style="background:${pal.accentPrimary};color:${pal.textPrimary}">Badge</div>
+  </div>`;
+  html += `<div>
+    <div class="demo-chip-label">Dark on Accent</div>
+    <div class="demo-chip" style="background:${pal.accentPrimary};color:${pal.bgPrimary}">Badge</div>
+  </div>`;
+  html += `<div>
+    <div class="demo-chip-label">Muted on BG</div>
+    <div class="demo-chip" style="background:${pal.bgPrimary};color:${pal.textMuted}">Muted text</div>
+  </div>`;
+  html += `<div>
+    <div class="demo-chip-label">Secondary on BG</div>
+    <div class="demo-chip" style="background:${pal.bgPrimary};color:${pal.accentSecondary}">Secondary</div>
+  </div>`;
+  html += `</div>`;
+
+  // Contrast table
+  html += `<div class="section-title">Contrast Ratios</div>`;
+  html += `<table class="contrast-table">`;
+  html += `<thead><tr>
+    <th>Pair</th>
+    <th>Description</th>
+    <th>Ratio</th>
+    <th>Level</th>
+  </tr></thead><tbody>`;
+
+  for (const r of results) {
+    html += `<tr>
+      <td>
+        <span class="pair-preview">
+          <span class="pair-dot" style="background:${r.fgHex}"></span>
+          <span class="pair-dot" style="background:${r.bgHex}"></span>
+        </span>
+        ${r.label}
+      </td>
+      <td style="color:var(--text-secondary);font-size:0.8rem">${r.desc}</td>
+      <td><span class="ratio-value">${r.ratio.toFixed(2)}:1</span></td>
+      <td><span class="compliance-badge ${complianceClass(r.level)}">${r.level}</span></td>
+    </tr>`;
+  }
+
+  html += `</tbody></table>`;
+
+  // Recommendations
+  html += `<div class="recommendations">`;
+  html += `<h4>Recommendations</h4>`;
+  html += `<ul class="rec-list">`;
+  for (const rec of recs) {
+    html += `<li class="${rec.cls}">${rec.text}</li>`;
+  }
+  html += `</ul></div>`;
+
+  html += `</div>`;
+  return html;
+}
+
+// ---------------------------------------------------------------------------
+// Main
+// ---------------------------------------------------------------------------
+(function main() {
+  const container = document.getElementById('palette-cards');
+  const summaries = [];
+
+  for (const [key, pal] of Object.entries(PALETTES)) {
+    const analysis = analyzePalette(key, pal);
+    container.innerHTML += renderCard(analysis);
+    summaries.push(analysis.summary);
+  }
+
+  // Render summary JSON
+  const jsonStr = JSON.stringify(summaries, null, 2);
+  document.getElementById('json-output').textContent = `const PALETTE_OVERRIDES = ${jsonStr};`;
+})();
+
+function copyJSON() {
+  const text = document.getElementById('json-output').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = 'Copy JSON'; }, 1500);
+  });
+}
+</script>
+</body>
+</html>
