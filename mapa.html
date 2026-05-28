@@ -821,12 +821,20 @@ initMap();
   </select>
   <div class="swatch-row" id="palette-swatches"></div>
 
-  <label for="font-select">Tipografía</label>
-  <select id="font-select">
-    <option value="original">Original · Montserrat + Raleway</option>
-    <option value="a">Propuesta A · Mozilla Headline + Roboto</option>
-    <option value="b">Propuesta B · Special Gothic Cond + DM Sans</option>
-    <option value="c">Propuesta C · Sulphur Point + Inter</option>
+  <label for="font-primary">Tipografía principal</label>
+  <select id="font-primary">
+    <option value="montserrat">Montserrat</option>
+    <option value="mozilla">Mozilla Headline</option>
+    <option value="gothic">Special Gothic Condensed</option>
+    <option value="sulphur">Sulphur Point</option>
+  </select>
+
+  <label for="font-secondary">Tipografía secundaria</label>
+  <select id="font-secondary">
+    <option value="raleway">Raleway</option>
+    <option value="roboto">Roboto</option>
+    <option value="dmsans">DM Sans</option>
+    <option value="inter">Inter</option>
   </select>
 
   <button id="restore-original">Restaurar Original</button>
@@ -895,27 +903,18 @@ const PALETTES = {
   },
 };
 
-const FONTS = {
-  original: { name:'Original',
-    '--font-display-light': "'Montserrat', sans-serif",
-    '--font-display-bold': "'Montserrat', sans-serif",
-    '--font-body': "'Raleway', sans-serif",
-  },
-  a: { name:'Mozilla Headline + Roboto',
-    '--font-display-light': "'Mozilla Headline', sans-serif",
-    '--font-display-bold': "'Mozilla Headline', sans-serif",
-    '--font-body': "'Roboto', sans-serif",
-  },
-  b: { name:'Special Gothic + DM Sans',
-    '--font-display-light': "'Special Gothic Condensed One', sans-serif",
-    '--font-display-bold': "'Special Gothic Condensed One', sans-serif",
-    '--font-body': "'DM Sans', sans-serif",
-  },
-  c: { name:'Sulphur Point + Inter',
-    '--font-display-light': "'Sulphur Point', sans-serif",
-    '--font-display-bold': "'Sulphur Point', sans-serif",
-    '--font-body': "'Inter', sans-serif",
-  },
+const PRIMARY_FONTS = {
+  montserrat: { name:'Montserrat', family: "'Montserrat', sans-serif" },
+  mozilla:    { name:'Mozilla Headline', family: "'Mozilla Headline', sans-serif" },
+  gothic:     { name:'Special Gothic Condensed', family: "'Special Gothic Condensed One', sans-serif" },
+  sulphur:    { name:'Sulphur Point', family: "'Sulphur Point', sans-serif" },
+};
+
+const SECONDARY_FONTS = {
+  raleway: { name:'Raleway', family: "'Raleway', sans-serif" },
+  roboto:  { name:'Roboto', family: "'Roboto', sans-serif" },
+  dmsans:  { name:'DM Sans', family: "'DM Sans', sans-serif" },
+  inter:   { name:'Inter', family: "'Inter', sans-serif" },
 };
 
 function applyVars(obj){
@@ -945,10 +944,18 @@ function applyPalette(key){
   refreshMap();
 }
 
-function applyFont(key){
-  const f=FONTS[key]||FONTS.original;
-  applyVars(f);
-  localStorage.setItem('map-font',key);
+function applyPrimaryFont(key){
+  const f=PRIMARY_FONTS[key]||PRIMARY_FONTS.montserrat;
+  document.documentElement.style.setProperty('--font-display-light', f.family);
+  document.documentElement.style.setProperty('--font-display-bold', f.family);
+  localStorage.setItem('map-font-primary',key);
+  refreshMap();
+}
+
+function applySecondaryFont(key){
+  const f=SECONDARY_FONTS[key]||SECONDARY_FONTS.raleway;
+  document.documentElement.style.setProperty('--font-body', f.family);
+  localStorage.setItem('map-font-secondary',key);
   refreshMap();
 }
 
@@ -957,7 +964,8 @@ window.addEventListener('DOMContentLoaded',()=>{
   const panel=document.getElementById('customizer-panel');
   const closeBtn=document.getElementById('customizer-close');
   const pSel=document.getElementById('palette-select');
-  const fSel=document.getElementById('font-select');
+  const fPri=document.getElementById('font-primary');
+  const fSec=document.getElementById('font-secondary');
   const restoreBtn=document.getElementById('restore-original');
 
   toggle.addEventListener('click',()=>{
@@ -969,16 +977,18 @@ window.addEventListener('DOMContentLoaded',()=>{
     toggle.classList.remove('hidden');
   });
   pSel.addEventListener('change',e=>applyPalette(e.target.value));
-  fSel.addEventListener('change',e=>applyFont(e.target.value));
+  fPri.addEventListener('change',e=>applyPrimaryFont(e.target.value));
+  fSec.addEventListener('change',e=>applySecondaryFont(e.target.value));
   restoreBtn.addEventListener('click',()=>{
-    pSel.value='original'; fSel.value='original';
-    applyPalette('original'); applyFont('original');
+    pSel.value='original'; fPri.value='montserrat'; fSec.value='raleway';
+    applyPalette('original'); applyPrimaryFont('montserrat'); applySecondaryFont('raleway');
   });
 
   const savedP=localStorage.getItem('map-palette')||'original';
-  const savedF=localStorage.getItem('map-font')||'original';
-  pSel.value=savedP; fSel.value=savedF;
-  applyPalette(savedP); applyFont(savedF);
+  const savedFP=localStorage.getItem('map-font-primary')||'montserrat';
+  const savedFS=localStorage.getItem('map-font-secondary')||'raleway';
+  pSel.value=savedP; fPri.value=savedFP; fSec.value=savedFS;
+  applyPalette(savedP); applyPrimaryFont(savedFP); applySecondaryFont(savedFS);
 });
 </script>
 
