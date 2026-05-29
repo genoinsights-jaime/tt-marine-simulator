@@ -763,7 +763,7 @@ function sr(){
   let h='';
   if(rt)h+=`<div class="rcrd"><div class="rclbl">${t.sh1}</div><div class="rcval">${rt.time}</div></div>`;
   if(dv){
-    const dvStr=typeof dv==='object'?`${dv.km} Km <span style="font-size:11px;opacity:.7">/ ${dv.nm} NM</span>`:`${dv} NM`;
+    const dvStr=typeof dv==='object'?`${dv.km} Km <span style="font-size:13px;opacity:.7">/ ${dv.nm} NM</span>`:`${dv} NM`;
     h+=`<div class="rcrd"><div class="rclbl">${t.sh2}</div><div class="rcval">${dvStr}</div></div>`;
   }
   re.innerHTML=h;render();
