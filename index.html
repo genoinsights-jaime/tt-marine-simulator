@@ -12,6 +12,8 @@
   --color-bg-primary: #001237;
   --color-bg-surface: #061B44;
   --color-bg-rgb: 0, 18, 55;
+  --color-overlay-rgb: 0, 18, 55;
+  --color-divider: var(--color-accent-primary);
   --color-accent-primary: #28AAE0;
   --color-accent-secondary: #7FCBED;
   --color-accent-tertiary: #177AA3;
@@ -58,6 +60,23 @@ html, body {
 .slide .shape, .slide .pic, .slide .conn { pointer-events: none; }
 .slide .txbox { pointer-events: auto; user-select: text; }
 .slide p { margin: 0; font-family: 'Montserrat', sans-serif; }
+
+/* Brand placeholder system — hides logos on non-original palettes */
+html:not([data-palette="original"]) .pic-wrap[data-brand] img { opacity: 0; }
+html:not([data-palette="original"]) [data-brand]::after {
+  content: attr(data-brand-label);
+  position: absolute; inset: 3px;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px dashed var(--color-accent-primary);
+  border-radius: 8px;
+  color: var(--color-accent-primary);
+  font: 600 13px/1 'Inter', system-ui, sans-serif;
+  letter-spacing: 2px; text-transform: uppercase;
+  opacity: 0.45; pointer-events: none; z-index: 1;
+}
+html:not([data-palette="original"]) .pic-wrap[data-brand]::after {
+  inset: 0; border-radius: 12px; font-size: 11px;
+}
 
 /* Montserrat Light override removed — handled by --font-display-light variable */
 /* Force cyan color on tagline — override any rendering quirks */
@@ -165,6 +184,14 @@ html, body {
 #customizer-panel .swatch {
   flex: 1; height: 16px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.06);
 }
+.mode-btn {
+  flex: 1; padding: 8px 0; border: 1px solid #333; border-radius: 6px;
+  background: transparent; color: #999; cursor: pointer;
+  font: 600 11px/1 'Inter', system-ui, sans-serif; letter-spacing: 0.4px;
+  transition: all 0.15s;
+}
+.mode-btn:hover { border-color: #28AAE0; color: #fff; }
+.mode-btn.active { background: #28AAE0; border-color: #28AAE0; color: #14171D; }
 #restore-original {
   width: 100%; margin-top: 28px; padding: 11px 14px;
   background: transparent; color: #28AAE0;
@@ -314,7 +341,7 @@ canvas{position:absolute;top:0;left:0;will-change:transform;}
 <div class="shape" style="position:absolute;left:129.60px;top:1000.80px;width:864.02px;height:21.83px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.150"><span style="font-size:18.00px;font-family:var(--font-body);color:var(--color-accent-primary)">tt-maritime.com.ar</span></p></div></div>
 <div class="shape" style="position:absolute;left:129.60px;top:565.00px;width:1880.46px;height:261.78px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:108.00px;font-family:var(--font-display-light);font-weight:300;color:var(--color-text-primary)">Tailor-made service</span></p>
 <p style="text-align:left;margin:0;line-height:1.000"><span class="tagline-cyan" style="font-size:108.00px;font-family:var(--font-display-light);font-weight:300;color:var(--color-accent-primary)">for every shipment.</span></p></div></div>
-<div class="pic-wrap" style="position:absolute;left:1616.55px;top:797.55px;width:230.91px;height:212.37px;overflow:hidden;"><img class="pic" src="assets/image1.png" style="position:absolute;left:-80.86px;top:-21.92px;width:387.35px;height:374.17px;max-width:none;max-height:none;display:block;" alt=""></div>
+<div class="pic-wrap" data-brand="logo" data-brand-label="Logo" style="position:absolute;left:1616.55px;top:797.55px;width:230.91px;height:212.37px;overflow:hidden;"><img class="pic" src="assets/image1.png" style="position:absolute;left:-80.86px;top:-21.92px;width:387.35px;height:374.17px;max-width:none;max-height:none;display:block;" alt=""></div>
 </div>
 <div class="slide" data-n="2" style="">
 <div class="pic-wrap" style="position:absolute;left:0.00px;top:0.00px;width:1930.35px;height:1080.00px;overflow:hidden;"><img class="pic" src="assets/image15.png" style="position:absolute;left:-0.00px;top:-43.41px;width:1930.35px;height:1286.60px;max-width:none;max-height:none;display:block;" alt=""></div>
@@ -331,31 +358,31 @@ canvas{position:absolute;top:0;left:0;will-change:transform;}
 </div>
 <div class="slide" data-n="3" style="">
 <div class="pic-wrap" style="position:absolute;left:942.08px;top:-0.27px;width:985.90px;height:1080.54px;overflow:hidden;"><img class="pic" src="assets/image10.png" style="position:absolute;left:-529.25px;top:-0.00px;width:1920.07px;height:1080.54px;max-width:none;max-height:none;display:block;" alt=""></div>
-<div class="shape" style="position:absolute;left:1055.21px;top:0.00px;width:872.76px;height:1080.00px;box-sizing:border-box;background:rgba(var(--color-bg-rgb), 0.820)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:1055.21px;top:0.00px;width:872.76px;height:1080.00px;box-sizing:border-box;background:rgba(var(--color-overlay-rgb), 0.820)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
 <div class="shape" style="position:absolute;left:0.00px;top:0.00px;width:1055.22px;height:1080.00px;box-sizing:border-box;background:var(--color-bg-primary)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
-<div class="shape" style="position:absolute;left:1047.34px;top:0.00px;width:7.89px;height:1080.00px;box-sizing:border-box;background:var(--color-accent-primary)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:1047.34px;top:0.00px;width:7.89px;height:1080.00px;box-sizing:border-box;background:var(--color-divider)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
 <div class="shape" style="position:absolute;left:98.63px;top:387.41px;width:907.11px;height:29.10px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.200"><span style="font-size:24.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-primary)">MISSION</span></p></div></div>
 <div class="shape" style="position:absolute;left:98.62px;top:428.59px;width:907.11px;height:170.08px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:36.00px;font-style:italic;font-family:var(--font-body);color:var(--color-text-primary)">Set the standard for maritime trade across Argentina, Uruguay and Paraguay, with the deepest understanding of the market and the closest service in the business.</span></p></div></div>
 <div class="shape" style="position:absolute;left:98.63px;top:688.60px;width:907.11px;height:33.92px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.200"><span style="font-size:28.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-primary)">VISION</span></p></div></div>
 <div class="shape" style="position:absolute;left:98.62px;top:727.97px;width:907.11px;height:181.09px;box-sizing:border-box;background:var(--color-bg-primary)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:36.00px;font-style:italic;font-family:var(--font-body);color:var(--color-text-primary)">Be the maritime agency of reference in ECSA, not the largest, but the one clients choose as their long-term partner.</span></p></div></div>
 <div class="shape" style="position:absolute;left:1079.56px;top:79.20px;width:844.61px;height:93.59px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:44.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">OUR VALUES</span></p></div></div>
-<div class="shape" style="position:absolute;left:1079.56px;top:180.00px;width:805.77px;height:6.47px;box-sizing:border-box;background:var(--color-accent-primary)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:14.4px 14.4px 14.4px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:1079.56px;top:180.00px;width:805.77px;height:6.47px;box-sizing:border-box;background:var(--color-divider)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:14.4px 14.4px 14.4px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
 <div class="shape" style="position:absolute;left:1079.56px;top:216.00px;width:108.00px;height:181.80px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:60.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-primary)">01</span></p></div></div>
 <div class="shape" style="position:absolute;left:1187.56px;top:216.00px;width:707.78px;height:69.12px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:40.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">Precision</span></p></div></div>
-<div class="shape" style="position:absolute;left:1187.56px;top:288.00px;width:707.78px;height:108.00px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.300"><span style="font-size:30.00px;font-family:var(--font-body);color:var(--color-text-muted)">Every decimal in the draft, every hour in the ETA.</span></p></div></div>
-<div class="shape" style="position:absolute;left:1079.56px;top:405.00px;width:805.77px;height:4.30px;box-sizing:border-box;background:var(--color-accent-primary)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:14.4px 14.4px 14.4px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:1187.56px;top:288.00px;width:707.78px;height:108.00px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.300"><span style="font-size:30.00px;font-family:var(--font-body);color:var(--color-text-primary)">Every decimal in the draft, every hour in the ETA.</span></p></div></div>
+<div class="shape" style="position:absolute;left:1079.56px;top:405.00px;width:805.77px;height:4.30px;box-sizing:border-box;background:var(--color-divider)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:14.4px 14.4px 14.4px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
 <div class="shape" style="position:absolute;left:1079.56px;top:426.60px;width:108.00px;height:181.80px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:60.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-primary)">02</span></p></div></div>
 <div class="shape" style="position:absolute;left:1187.56px;top:426.60px;width:707.78px;height:69.12px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:40.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">Proximity</span></p></div></div>
-<div class="shape" style="position:absolute;left:1187.56px;top:498.60px;width:707.78px;height:108.00px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.300"><span style="font-size:30.00px;font-family:var(--font-body);color:var(--color-text-muted)">On top of operations and accessible 24/7.</span></p></div></div>
-<div class="shape" style="position:absolute;left:1079.56px;top:615.60px;width:805.77px;height:4.30px;box-sizing:border-box;background:var(--color-accent-primary)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:14.4px 14.4px 14.4px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:1187.56px;top:498.60px;width:707.78px;height:108.00px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.300"><span style="font-size:30.00px;font-family:var(--font-body);color:var(--color-text-primary)">On top of operations and accessible 24/7.</span></p></div></div>
+<div class="shape" style="position:absolute;left:1079.56px;top:615.60px;width:805.77px;height:4.30px;box-sizing:border-box;background:var(--color-divider)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:14.4px 14.4px 14.4px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
 <div class="shape" style="position:absolute;left:1079.56px;top:637.20px;width:108.00px;height:181.80px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:60.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-primary)">03</span></p></div></div>
 <div class="shape" style="position:absolute;left:1187.56px;top:637.20px;width:707.78px;height:69.12px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:40.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">Intelligence</span></p></div></div>
-<div class="shape" style="position:absolute;left:1187.56px;top:709.20px;width:707.78px;height:108.00px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.300"><span style="font-size:30.00px;font-family:var(--font-body);color:var(--color-text-muted)">Drafts, line-ups, waiting times, statistics &amp; news.</span></p>
-<p style="text-align:left;margin:0;line-height:1.300"><span style="font-size:30.00px;font-family:var(--font-body);color:var(--color-text-muted)">Our insight, your decision.</span></p></div></div>
-<div class="shape" style="position:absolute;left:1079.56px;top:826.20px;width:805.77px;height:4.30px;box-sizing:border-box;background:var(--color-accent-primary)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:14.4px 14.4px 14.4px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
+<div class="shape" style="position:absolute;left:1187.56px;top:709.20px;width:707.78px;height:108.00px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.300"><span style="font-size:30.00px;font-family:var(--font-body);color:var(--color-text-primary)">Drafts, line-ups, waiting times, statistics &amp; news.</span></p>
+<p style="text-align:left;margin:0;line-height:1.300"><span style="font-size:30.00px;font-family:var(--font-body);color:var(--color-text-primary)">Our insight, your decision.</span></p></div></div>
+<div class="shape" style="position:absolute;left:1079.56px;top:826.20px;width:805.77px;height:4.30px;box-sizing:border-box;background:var(--color-divider)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:14.4px 14.4px 14.4px 14.4px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style=""></span></p></div></div>
 <div class="shape" style="position:absolute;left:1079.56px;top:847.80px;width:108.00px;height:181.80px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:60.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-accent-primary)">04</span></p></div></div>
 <div class="shape" style="position:absolute;left:1187.56px;top:847.80px;width:707.78px;height:69.12px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:40.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">Trust</span></p></div></div>
-<div class="shape" style="position:absolute;left:1187.56px;top:919.80px;width:707.78px;height:108.00px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.300"><span style="font-size:30.00px;font-family:var(--font-body);color:var(--color-text-muted)">Reliability is the floor. What we promise, we deliver.</span></p></div></div>
+<div class="shape" style="position:absolute;left:1187.56px;top:919.80px;width:707.78px;height:108.00px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.300"><span style="font-size:30.00px;font-family:var(--font-body);color:var(--color-text-primary)">Reliability is the floor. What we promise, we deliver.</span></p></div></div>
 <div class="shape" style="position:absolute;left:93.60px;top:86.33px;width:907.11px;height:273.59px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:108.00px;font-family:var(--font-display-light);color:var(--color-text-primary)">What Drives us</span></p></div></div>
 </div>
 <div class="slide" data-n="4" style="">
@@ -539,22 +566,22 @@ canvas{position:absolute;top:0;left:0;will-change:transform;}
 <div class="shape" style="position:absolute;left:1272.43px;top:760.32px;width:540.58px;height:1.75px;box-sizing:border-box;background:var(--color-accent-tertiary);box-shadow:0.00px 3.62px 6.30px rgba(0,0,0,0.349)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
 <div class="pic-wrap" style="position:absolute;left:113.04px;top:773.23px;width:223.21px;height:223.20px;overflow:hidden;"><img class="pic" src="assets/image7.jpg" style="position:absolute;left:-0.00px;top:-28.17px;width:223.21px;height:334.80px;max-width:none;max-height:none;display:block;" alt=""></div>
 <div class="shape" style="position:absolute;left:100.81px;top:1005.88px;width:247.66px;height:23.01px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:19.00px;font-weight:700;font-family:var(--font-body);color:var(--color-text-primary)">Matias Codina</span></p></div></div>
-<div class="shape" style="position:absolute;left:100.81px;top:1038.33px;width:247.66px;height:20.60px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:17.00px;font-family:var(--font-body);color:var(--color-accent-tertiary)">Senior Operator</span></p></div></div>
+<div class="shape" style="position:absolute;left:100.81px;top:1038.33px;width:247.66px;height:20.60px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:17.00px;font-family:var(--font-body);color:var(--color-text-muted)">Senior Operator</span></p></div></div>
 <div class="pic-wrap" style="position:absolute;left:405.95px;top:773.23px;width:223.21px;height:223.20px;overflow:hidden;"><img class="pic" src="assets/image17.jpg" style="position:absolute;left:-0.00px;top:-28.79px;width:223.21px;height:335.23px;max-width:none;max-height:none;display:block;" alt=""></div>
 <div class="shape" style="position:absolute;left:393.71px;top:1005.88px;width:247.66px;height:23.01px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:19.00px;font-weight:700;font-family:var(--font-body);color:var(--color-text-primary)">Juan Cruz Benegas</span></p></div></div>
-<div class="shape" style="position:absolute;left:393.71px;top:1038.33px;width:247.66px;height:20.60px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:17.00px;font-family:var(--font-body);color:var(--color-accent-tertiary)">Senior Operator</span></p></div></div>
+<div class="shape" style="position:absolute;left:393.71px;top:1038.33px;width:247.66px;height:20.60px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:17.00px;font-family:var(--font-body);color:var(--color-text-muted)">Senior Operator</span></p></div></div>
 <div class="pic-wrap" style="position:absolute;left:698.85px;top:773.23px;width:223.21px;height:223.20px;overflow:hidden;"><img class="pic" src="assets/image3.jpg" style="position:absolute;left:-0.00px;top:-24.82px;width:223.21px;height:334.80px;max-width:none;max-height:none;display:block;" alt=""></div>
 <div class="shape" style="position:absolute;left:686.62px;top:1005.88px;width:247.66px;height:23.01px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:19.00px;font-weight:700;font-family:var(--font-body);color:var(--color-text-primary)">Matias Ureta</span></p></div></div>
-<div class="shape" style="position:absolute;left:686.62px;top:1038.33px;width:247.66px;height:20.60px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:17.00px;font-family:var(--font-body);color:var(--color-accent-tertiary)">Operator</span></p></div></div>
+<div class="shape" style="position:absolute;left:686.62px;top:1038.33px;width:247.66px;height:20.60px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:17.00px;font-family:var(--font-body);color:var(--color-text-muted)">Operator</span></p></div></div>
 <div class="pic-wrap" style="position:absolute;left:991.75px;top:773.23px;width:223.21px;height:223.20px;overflow:hidden;"><img class="pic" src="assets/image16.jpg" style="position:absolute;left:-0.00px;top:-32.63px;width:223.21px;height:334.80px;max-width:none;max-height:none;display:block;" alt=""></div>
 <div class="shape" style="position:absolute;left:979.52px;top:1005.88px;width:247.66px;height:23.01px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:19.00px;font-weight:700;font-family:var(--font-body);color:var(--color-text-primary)">Julian Sutka</span></p></div></div>
-<div class="shape" style="position:absolute;left:979.52px;top:1038.33px;width:247.66px;height:20.60px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:17.00px;font-family:var(--font-body);color:var(--color-accent-tertiary)">Operator</span></p></div></div>
+<div class="shape" style="position:absolute;left:979.52px;top:1038.33px;width:247.66px;height:20.60px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:17.00px;font-family:var(--font-body);color:var(--color-text-muted)">Operator</span></p></div></div>
 <div class="pic-wrap" style="position:absolute;left:1284.66px;top:773.23px;width:223.21px;height:223.20px;overflow:hidden;"><img class="pic" src="assets/image4.jpg" style="position:absolute;left:-0.00px;top:-51.89px;width:223.21px;height:339.04px;max-width:none;max-height:none;display:block;" alt=""></div>
 <div class="shape" style="position:absolute;left:1272.43px;top:1005.88px;width:247.66px;height:23.01px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:19.00px;font-weight:700;font-family:var(--font-body);color:var(--color-text-primary)">Diorella Laterza</span></p></div></div>
-<div class="shape" style="position:absolute;left:1272.43px;top:1038.33px;width:247.66px;height:20.60px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:17.00px;font-family:var(--font-body);color:var(--color-accent-tertiary)">D/A Manager</span></p></div></div>
+<div class="shape" style="position:absolute;left:1272.43px;top:1038.33px;width:247.66px;height:20.60px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:17.00px;font-family:var(--font-body);color:var(--color-text-muted)">D/A Manager</span></p></div></div>
 <div class="pic-wrap" style="position:absolute;left:1577.56px;top:773.23px;width:223.21px;height:223.20px;overflow:hidden;"><img class="pic" src="assets/image19.jpg" style="position:absolute;left:-0.00px;top:-32.99px;width:223.21px;height:335.23px;max-width:none;max-height:none;display:block;" alt=""></div>
 <div class="shape" style="position:absolute;left:1565.33px;top:1005.88px;width:247.66px;height:23.01px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:19.00px;font-weight:700;font-family:var(--font-body);color:var(--color-text-primary)">Renzo DeMarchi</span></p></div></div>
-<div class="shape" style="position:absolute;left:1565.33px;top:1038.33px;width:247.66px;height:20.60px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:17.00px;font-family:var(--font-body);color:var(--color-accent-tertiary)">Finance Assistant</span></p></div></div>
+<div class="shape" style="position:absolute;left:1565.33px;top:1038.33px;width:247.66px;height:20.60px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:17.00px;font-family:var(--font-body);color:var(--color-text-muted)">Finance Assistant</span></p></div></div>
 <div class="shape" style="position:absolute;left:974.81px;top:223.20px;width:407.54px;height:439.18px;box-sizing:border-box;background:#EAEAEA;box-shadow:0.00px 3.62px 6.30px rgba(0,0,0,0.349)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
 <div class="shape" style="position:absolute;left:974.81px;top:223.20px;width:407.54px;height:5.76px;box-sizing:border-box;background:var(--color-accent-tertiary);box-shadow:0.00px 3.62px 6.30px rgba(0,0,0,0.349)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
 <div class="shape" style="position:absolute;left:996.41px;top:479.52px;width:364.31px;height:33.92px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:28.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-bg-primary)">RODRIGO ESCOBAR</span></p></div></div>
@@ -567,7 +594,7 @@ canvas{position:absolute;top:0;left:0;will-change:transform;}
 <div class="pic-wrap" style="position:absolute;left:1090.77px;top:252.96px;width:201.61px;height:202.56px;overflow:hidden;"><img class="pic" src="assets/image6.jpg" style="position:absolute;left:-0.00px;top:-30.38px;width:201.61px;height:303.93px;max-width:none;max-height:none;display:block;" alt=""></div>
 </div>
 <div class="slide" data-n="9" style="background:var(--color-bg-primary);">
-<div class="pic-wrap" style="position:absolute;left:801.36px;top:187.20px;width:316.80px;height:316.79px;overflow:hidden;"><img class="pic" src="assets/image12.png" style="position:absolute;left:-0.00px;top:-0.00px;width:316.80px;height:316.79px;max-width:none;max-height:none;display:block;" alt=""></div>
+<div class="pic-wrap" data-brand="logo" data-brand-label="Logo" style="position:absolute;left:801.36px;top:187.20px;width:316.80px;height:316.79px;overflow:hidden;"><img class="pic" src="assets/image12.png" style="position:absolute;left:-0.00px;top:-0.00px;width:316.80px;height:316.79px;max-width:none;max-height:none;display:block;" alt=""></div>
 <div class="shape" style="position:absolute;left:0.00px;top:540.00px;width:1919.53px;height:89.29px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:72.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">T&amp;T MARINE</span></p></div></div>
 <svg class="conn" style="position:absolute;left:887.76px;top:645.12px;width:144.00px;height:0.00px;overflow:visible" viewBox="0 0 144.00 1.00" preserveAspectRatio="none"><line x1="0.00" y1="0.00" x2="144.00" y2="0.00" stroke="var(--color-accent-primary)" stroke-width="3.33"/></svg>
 <div class="shape" style="position:absolute;left:0.00px;top:665.28px;width:1919.53px;height:40.30px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style="font-size:28.00px;font-family:var(--font-body);color:var(--color-accent-primary)">Maritime Agency  ·  Trade and Trust</span></p></div></div>
@@ -689,6 +716,14 @@ resetHide();
     <option value="inter">Inter</option>
   </select>
 
+  <div id="invert-row" style="display:none;margin:0 0 16px 0;">
+    <label style="margin-bottom:6px;">Modo de fondo</label>
+    <div style="display:flex;gap:8px;">
+      <button id="mode-dark" class="mode-btn active" type="button">Oscuro</button>
+      <button id="mode-light" class="mode-btn" type="button">Claro</button>
+    </div>
+  </div>
+
   <button id="restore-original">Restaurar Original</button>
 
   <p class="info">
@@ -712,6 +747,7 @@ const PALETTES = {
     '--color-text-primary': '#FFFFFF',
     '--color-text-muted': '#D4ECF9',
     '--color-badge-text': '#001237',
+    '--color-overlay-rgb': '0, 18, 55',
     '--label-bg-alpha': '0.85',
   },
   a: { name:'Propuesta A (Marítimo + tierra)',
@@ -726,6 +762,8 @@ const PALETTES = {
     '--color-text-primary': '#FFFFFF',
     '--color-text-muted': '#D9B282',
     '--color-badge-text': '#012340',
+    '--color-overlay-rgb': '1, 35, 64',
+    '--color-divider': '#8C6542',
     '--label-bg-alpha': '0',
   },
   b: { name:'Propuesta B (Innovación tech)',
@@ -740,6 +778,7 @@ const PALETTES = {
     '--color-text-primary': '#FFFFFF',
     '--color-text-muted': '#EAFCFF',
     '--color-badge-text': '#000A1F',
+    '--color-overlay-rgb': '0, 10, 31',
     '--label-bg-alpha': '0.85',
   },
   c: { name:'Propuesta C (Azules + verde agua)',
@@ -754,6 +793,7 @@ const PALETTES = {
     '--color-text-primary': '#FFFFFF',
     '--color-text-muted': '#F2F2F2',
     '--color-badge-text': '#001237',
+    '--color-overlay-rgb': '0, 18, 55',
     '--label-bg-alpha': '0',
   },
   d: { name:'Propuesta D (Azul + naranja)',
@@ -768,6 +808,7 @@ const PALETTES = {
     '--color-text-primary': '#FFFFFF',
     '--color-text-muted': '#E7E6E4',
     '--color-badge-text': '#021F59',
+    '--color-overlay-rgb': '2, 31, 89',
     '--label-bg-alpha': '0.85',
   },
   e: { name:'Propuesta E (Petróleo + lima)',
@@ -782,7 +823,87 @@ const PALETTES = {
     '--color-text-primary': '#FFFFFF',
     '--color-text-muted': '#C0D6EB',
     '--color-badge-text': '#002333',
+    '--color-overlay-rgb': '0, 35, 51',
     '--label-bg-alpha': '0',
+  },
+};
+
+const PALETTES_LIGHT = {
+  a: {
+    '--color-bg-primary': '#FFFFFF',
+    '--color-bg-surface': '#EBF0F5',
+    '--color-bg-rgb': '255, 255, 255',
+    '--color-bg-surface-rgb': '235, 240, 245',
+    '--color-accent-primary': '#0A8EC0',
+    '--color-accent-primary-rgb': '10, 142, 192',
+    '--color-accent-secondary': '#8C6542',
+    '--color-accent-tertiary': '#C9D6E0',
+    '--color-text-primary': '#012340',
+    '--color-text-muted': '#6B5A48',
+    '--color-badge-text': '#FFFFFF',
+    '--color-overlay-rgb': '240, 243, 247',
+    '--color-divider': '#8C6542',
+    '--label-bg-alpha': '0.90',
+  },
+  b: {
+    '--color-bg-primary': '#FFFFFF',
+    '--color-bg-surface': '#E8EBF2',
+    '--color-bg-rgb': '255, 255, 255',
+    '--color-bg-surface-rgb': '232, 235, 242',
+    '--color-accent-primary': '#0A8EC0',
+    '--color-accent-primary-rgb': '10, 142, 192',
+    '--color-accent-secondary': '#05B8CC',
+    '--color-accent-tertiary': '#C0D0E8',
+    '--color-text-primary': '#000A1F',
+    '--color-text-muted': '#3A4A6A',
+    '--color-badge-text': '#FFFFFF',
+    '--color-overlay-rgb': '240, 242, 247',
+    '--label-bg-alpha': '0.90',
+  },
+  c: {
+    '--color-bg-primary': '#FFFFFF',
+    '--color-bg-surface': '#EAF0F5',
+    '--color-bg-rgb': '255, 255, 255',
+    '--color-bg-surface-rgb': '234, 240, 245',
+    '--color-accent-primary': '#2DBAB0',
+    '--color-accent-primary-rgb': '45, 186, 176',
+    '--color-accent-secondary': '#3A65B8',
+    '--color-accent-tertiary': '#C5D0E8',
+    '--color-text-primary': '#001237',
+    '--color-text-muted': '#3A4565',
+    '--color-badge-text': '#FFFFFF',
+    '--color-overlay-rgb': '240, 243, 247',
+    '--label-bg-alpha': '0.90',
+  },
+  d: {
+    '--color-bg-primary': '#FFFFFF',
+    '--color-bg-surface': '#EEF0F5',
+    '--color-bg-rgb': '255, 255, 255',
+    '--color-bg-surface-rgb': '238, 240, 245',
+    '--color-accent-primary': '#E07010',
+    '--color-accent-primary-rgb': '224, 112, 16',
+    '--color-accent-secondary': '#C49580',
+    '--color-accent-tertiary': '#C8D0E0',
+    '--color-text-primary': '#021F59',
+    '--color-text-muted': '#4A4540',
+    '--color-badge-text': '#FFFFFF',
+    '--color-overlay-rgb': '242, 243, 247',
+    '--label-bg-alpha': '0.90',
+  },
+  e: {
+    '--color-bg-primary': '#FFFFFF',
+    '--color-bg-surface': '#ECF0F3',
+    '--color-bg-rgb': '255, 255, 255',
+    '--color-bg-surface-rgb': '236, 240, 243',
+    '--color-accent-primary': '#7DA000',
+    '--color-accent-primary-rgb': '125, 160, 0',
+    '--color-accent-secondary': '#6888A0',
+    '--color-accent-tertiary': '#C5D0D8',
+    '--color-text-primary': '#002333',
+    '--color-text-muted': '#3A4A55',
+    '--color-badge-text': '#FFFFFF',
+    '--color-overlay-rgb': '240, 244, 247',
+    '--label-bg-alpha': '0.90',
   },
 };
 
@@ -806,12 +927,30 @@ function applyVars(obj) {
   });
 }
 
-function applyPalette(key) {
-  const p = PALETTES[key] || PALETTES.original;
+let _lightMode = false;
+
+function applyPalette(key, lightOverride) {
+  const isLight = lightOverride !== undefined ? lightOverride : _lightMode;
+  const base = PALETTES[key] || PALETTES.original;
+  // Use light variant if toggled and palette is not original
+  const useLight = isLight && key !== 'original' && PALETTES_LIGHT[key];
+  const p = useLight ? { ...base, ...PALETTES_LIGHT[key] } : base;
   applyVars(p);
   document.documentElement.setAttribute('data-palette', key);
+  document.documentElement.setAttribute('data-mode', useLight ? 'light' : 'dark');
   localStorage.setItem('tt-palette', key);
-  renderSwatches(p);
+  localStorage.setItem('tt-mode', isLight ? 'light' : 'dark');
+  renderSwatches(useLight ? PALETTES_LIGHT[key] : base);
+  // Show/hide invert toggle
+  const invertRow = document.getElementById('invert-row');
+  if (invertRow) invertRow.style.display = key === 'original' ? 'none' : 'block';
+  // Update button states
+  const dBtn = document.getElementById('mode-dark');
+  const lBtn = document.getElementById('mode-light');
+  if (dBtn && lBtn) {
+    dBtn.classList.toggle('active', !isLight);
+    lBtn.classList.toggle('active', isLight);
+  }
 }
 
 function applyPrimaryFont(key) {
@@ -852,11 +991,17 @@ window.addEventListener('DOMContentLoaded', () => {
     panel.classList.remove('open'); panel.setAttribute('aria-hidden','true');
     toggle.classList.remove('hidden');
   });
+  const modeDark = document.getElementById('mode-dark');
+  const modeLight = document.getElementById('mode-light');
+
   pSel.addEventListener('change', e => applyPalette(e.target.value));
   fPri.addEventListener('change', e => applyPrimaryFont(e.target.value));
   fSec.addEventListener('change', e => applySecondaryFont(e.target.value));
+  modeDark.addEventListener('click', () => { _lightMode = false; applyPalette(pSel.value); });
+  modeLight.addEventListener('click', () => { _lightMode = true; applyPalette(pSel.value); });
   restoreBtn.addEventListener('click', () => {
     pSel.value = 'original'; fPri.value = 'montserrat'; fSec.value = 'raleway';
+    _lightMode = false;
     applyPalette('original'); applyPrimaryFont('montserrat'); applySecondaryFont('raleway');
   });
 
@@ -864,6 +1009,8 @@ window.addEventListener('DOMContentLoaded', () => {
   const savedP = localStorage.getItem('tt-palette') || 'original';
   const savedFP = localStorage.getItem('tt-font-primary') || 'montserrat';
   const savedFS = localStorage.getItem('tt-font-secondary') || 'raleway';
+  const savedMode = localStorage.getItem('tt-mode') || 'dark';
+  _lightMode = savedMode === 'light';
   pSel.value = savedP; fPri.value = savedFP; fSec.value = savedFS;
   applyPalette(savedP); applyPrimaryFont(savedFP); applySecondaryFont(savedFS);
 });
