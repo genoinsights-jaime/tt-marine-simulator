@@ -15,6 +15,7 @@
   --color-overlay-rgb: 0, 18, 55;
   --color-divider: var(--color-accent-primary);
   --color-role-subtitle: #177AA3;
+  --color-tagline: var(--color-accent-secondary);
   --color-accent-primary: #28AAE0;
   --color-accent-secondary: #7FCBED;
   --color-accent-tertiary: #177AA3;
@@ -184,7 +185,20 @@ html:not([data-palette="original"]) .pic-wrap[data-brand]::after {
 }
 #customizer-panel .swatch {
   flex: 1; height: 16px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.06);
+  position: relative; cursor: pointer;
 }
+#customizer-panel .swatch .hex-tip {
+  display: none; position: absolute; bottom: calc(100% + 6px); left: 50%;
+  transform: translateX(-50%); background: #111; color: #fff;
+  font: 600 10px/1 'Inter', system-ui, monospace; padding: 4px 7px;
+  border-radius: 4px; white-space: nowrap; pointer-events: none;
+  z-index: 10; letter-spacing: 0.5px;
+}
+#customizer-panel .swatch .hex-tip::after {
+  content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  border: 4px solid transparent; border-top-color: #111;
+}
+#customizer-panel .swatch:hover .hex-tip { display: block; }
 .mode-btn {
   flex: 1; padding: 8px 0; border: 1px solid #333; border-radius: 6px;
   background: transparent; color: #999; cursor: pointer;
@@ -337,7 +351,7 @@ canvas{position:absolute;top:0;left:0;will-change:transform;}
 <div class="shape" style="position:absolute;left:0.00px;top:0.00px;width:1920.00px;height:1080.00px;box-sizing:border-box;background:var(--color-bg-primary);box-shadow:0.00px 3.62px 6.30px rgba(0,0,0,0.349)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
 <div class="shape" style="position:absolute;left:129.60px;top:362.00px;width:155.00px;height:3.33px;box-sizing:border-box;background:var(--color-accent-primary)"></div>
 <div class="shape" style="position:absolute;left:129.60px;top:235.14px;width:864.02px;height:92.13px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.150"><span style="font-size:76.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">T&amp;T MARINE</span></p></div></div>
-<div class="shape" style="position:absolute;left:129.60px;top:322.19px;width:864.02px;height:33.92px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.150"><span style="font-size:28.00px;font-family:var(--font-body);color:var(--color-accent-secondary)">Maritime Agency  ·  Trade and Trust</span></p></div></div>
+<div class="shape" style="position:absolute;left:129.60px;top:322.19px;width:864.02px;height:33.92px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.150"><span style="font-size:28.00px;font-family:var(--font-body);color:var(--color-tagline)">Maritime Agency  ·  Trade and Trust</span></p></div></div>
 <div class="shape" style="position:absolute;left:129.60px;top:964.80px;width:864.02px;height:24.24px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.150"><span style="font-size:20.00px;font-weight:700;font-family:var(--font-display-bold);color:var(--color-text-primary)">Argentina  ·  Uruguay  ·  Paraguay</span></p></div></div>
 <div class="shape" style="position:absolute;left:129.60px;top:1000.80px;width:864.02px;height:21.83px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.150"><span style="font-size:18.00px;font-family:var(--font-body);color:var(--color-accent-primary)">tt-maritime.com.ar</span></p></div></div>
 <div class="shape" style="position:absolute;left:129.60px;top:565.00px;width:1880.46px;height:261.78px;box-sizing:border-box"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;padding:0.0px 0.0px 0.0px 0.0px;overflow:hidden"><p style="text-align:left;margin:0;line-height:1.000"><span style="font-size:108.00px;font-family:var(--font-display-light);font-weight:300;color:var(--color-text-primary)">Tailor-made service</span></p>
@@ -765,6 +779,7 @@ const PALETTES = {
     '--color-overlay-rgb': '0, 18, 55',
     '--color-role-subtitle': '#177AA3',
     '--color-divider': '#28AAE0',
+    '--color-tagline': '#7FCBED',
     '--label-bg-alpha': '0.85',
   },
   a: { name:'Propuesta A (Marítimo + tierra)',
@@ -782,6 +797,7 @@ const PALETTES = {
     '--color-overlay-rgb': '1, 35, 64',
     '--color-divider': '#8C6542',
     '--color-role-subtitle': '#D9B282',
+    '--color-tagline': '#FFFFFF',
     '--label-bg-alpha': '0',
   },
   b: { name:'Propuesta B (Innovación tech)',
@@ -799,6 +815,7 @@ const PALETTES = {
     '--color-overlay-rgb': '0, 10, 31',
     '--color-role-subtitle': '#05DBF2',
     '--color-divider': '#0DAFEE',
+    '--color-tagline': '#05DBF2',
     '--label-bg-alpha': '0.85',
   },
   c: { name:'Propuesta C (Azules + verde agua)',
@@ -816,6 +833,7 @@ const PALETTES = {
     '--color-overlay-rgb': '0, 18, 55',
     '--color-role-subtitle': '#58E6DB',
     '--color-divider': '#58E6DB',
+    '--color-tagline': '#527FD9',
     '--label-bg-alpha': '0',
   },
   d: { name:'Propuesta D (Azul + naranja)',
@@ -833,6 +851,7 @@ const PALETTES = {
     '--color-overlay-rgb': '2, 31, 89',
     '--color-role-subtitle': '#F98513',
     '--color-divider': '#F98513',
+    '--color-tagline': '#E3B7A1',
     '--label-bg-alpha': '0.85',
   },
   e: { name:'Propuesta E (Petróleo + lima)',
@@ -850,6 +869,7 @@ const PALETTES = {
     '--color-overlay-rgb': '0, 35, 51',
     '--color-role-subtitle': '#DDFE55',
     '--color-divider': '#DDFE55',
+    '--color-tagline': '#C0D6EB',
     '--label-bg-alpha': '0',
   },
 };
@@ -870,6 +890,7 @@ const PALETTES_LIGHT = {
     '--color-overlay-rgb': '240, 243, 247',
     '--color-divider': '#8C6542',
     '--color-role-subtitle': '#8C6542',
+    '--color-tagline': '#8C6542',
     '--label-bg-alpha': '0.90',
   },
   b: {
@@ -887,6 +908,7 @@ const PALETTES_LIGHT = {
     '--color-overlay-rgb': '240, 242, 247',
     '--color-role-subtitle': '#0899AA',
     '--color-divider': '#0A8EC0',
+    '--color-tagline': '#05B8CC',
     '--label-bg-alpha': '0.90',
   },
   c: {
@@ -904,6 +926,7 @@ const PALETTES_LIGHT = {
     '--color-overlay-rgb': '240, 243, 247',
     '--color-role-subtitle': '#2DBAB0',
     '--color-divider': '#2DBAB0',
+    '--color-tagline': '#3A65B8',
     '--label-bg-alpha': '0.90',
   },
   d: {
@@ -921,6 +944,7 @@ const PALETTES_LIGHT = {
     '--color-overlay-rgb': '242, 243, 247',
     '--color-role-subtitle': '#E07010',
     '--color-divider': '#E07010',
+    '--color-tagline': '#C49580',
     '--label-bg-alpha': '0.90',
   },
   e: {
@@ -938,6 +962,7 @@ const PALETTES_LIGHT = {
     '--color-overlay-rgb': '240, 244, 247',
     '--color-role-subtitle': '#7DA000',
     '--color-divider': '#7DA000',
+    '--color-tagline': '#6888A0',
     '--label-bg-alpha': '0.90',
   },
 };
@@ -1005,7 +1030,7 @@ function renderSwatches(palette) {
   const cont = document.getElementById('palette-swatches');
   if (!cont) return;
   const keys = ['--color-bg-primary','--color-bg-surface','--color-accent-primary','--color-accent-secondary','--color-text-muted'];
-  cont.innerHTML = keys.map(k => `<div class="swatch" title="${k}: ${palette[k]}" style="background:${palette[k]}"></div>`).join('');
+  cont.innerHTML = keys.map(k => `<div class="swatch" style="background:${palette[k]}"><span class="hex-tip">${palette[k]}</span></div>`).join('');
 }
 
 // ===== Font combo mapping =====
