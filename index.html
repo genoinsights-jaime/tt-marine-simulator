@@ -1030,7 +1030,19 @@ function renderSwatches(palette) {
   const cont = document.getElementById('palette-swatches');
   if (!cont) return;
   const keys = ['--color-bg-primary','--color-bg-surface','--color-accent-primary','--color-accent-secondary','--color-text-muted'];
-  cont.innerHTML = keys.map(k => `<div class="swatch" style="background:${palette[k]}"><span class="hex-tip">${palette[k]}</span></div>`).join('');
+  cont.innerHTML = keys.map(k => `<div class="swatch" style="background:${palette[k]}" data-hex="${palette[k]}"><span class="hex-tip">${palette[k]}</span></div>`).join('');
+  cont.querySelectorAll('.swatch').forEach(sw => {
+    sw.addEventListener('click', () => {
+      const hex = sw.dataset.hex;
+      navigator.clipboard.writeText(hex).then(() => {
+        const tip = sw.querySelector('.hex-tip');
+        const orig = tip.textContent;
+        tip.textContent = 'Copiado!';
+        tip.style.display = 'block';
+        setTimeout(() => { tip.textContent = orig; tip.style.display = ''; }, 1200);
+      });
+    });
+  });
 }
 
 // ===== Font combo mapping =====
