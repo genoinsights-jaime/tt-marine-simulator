@@ -276,17 +276,22 @@ canvas{position:absolute;top:0;left:0;will-change:transform;}
 function readColors(){
   const cs=getComputedStyle(document.documentElement);
   const g=v=>cs.getPropertyValue(v).trim();
+  const isLight = document.documentElement.getAttribute('data-mode') === 'light';
   return {
     navy900: g('--color-bg-primary')   || '#001237',
     navy700: g('--color-bg-surface')   || '#00236B',
     cyan700: g('--color-accent-tertiary') || '#177AA3',
     cyan500: g('--color-accent-primary')  || '#28AAE0',
     cyan300: g('--color-accent-secondary')|| '#7FCBED',
+    textPrimary: g('--color-text-primary') || '#FFFFFF',
     gray500: '#8B97A8',
     fontBold: (g('--font-display-bold') || "'Montserrat',sans-serif").replace(/^['"]|['"]$/g,''),
     fontBody: (g('--font-body')        || "'Raleway',sans-serif").replace(/^['"]|['"]$/g,''),
     labelBgAlpha: parseFloat(g('--label-bg-alpha') || '0.85'),
     badgeText: g('--color-badge-text') || g('--color-bg-primary') || '#001237',
+    isLight: isLight,
+    tileStyle: isLight ? 'light_nolabels' : 'dark_nolabels',
+    dotFill: isLight ? g('--color-bg-primary') || '#FFFFFF' : 'white',
   };
 }
 function hexToRgb(h){const c=h.replace('#','').trim();return{r:parseInt(c.slice(0,2),16),g:parseInt(c.slice(2,4),16),b:parseInt(c.slice(4,6),16)};}
@@ -424,11 +429,11 @@ function initMap(){
 
 function loadTile(tx,ty){
   // Tiles always load at integer zoom (intZ); CSS scale handles fractional visual zoom
-  const url=`https://a.basemaps.cartocdn.com/dark_nolabels/${intZ}/${tx}/${ty}.png`,img=new Image();
+  const url=`https://a.basemaps.cartocdn.com/${C.tileStyle}/${intZ}/${tx}/${ty}.png`,img=new Image();
   img.onload=()=>{
     const px=offX+(tx-oxT)*256,py=offY+(ty-oyT)*256;
     ctx.drawImage(img,px,py,256,256);
-    ctx.fillStyle=rgbaOf(C.navy700,.16);ctx.fillRect(px,py,256,256);
+    ctx.fillStyle=rgbaOf(C.navy700, C.isLight ? .06 : .16);ctx.fillRect(px,py,256,256);
     render();
   };
   img.src=url;
@@ -580,7 +585,7 @@ function render(){
     }
     const ci=mk('circle',{cx:x,cy:y,r,fill:C.cyan500,opacity:op,filter:'url(#g2)'});
     g.appendChild(ci);
-    g.appendChild(mk('circle',{cx:x,cy:y,r:rBase*.4/currentScale,fill:'white'}));
+    g.appendChild(mk('circle',{cx:x,cy:y,r:rBase*.4/currentScale,fill:C.dotFill}));
 
     const fs=port.labelFs||11,fw=port.labelFw||'500';
     const lw=port.name.length*fs*.56+8;
@@ -594,7 +599,7 @@ function render(){
     const ta=ll ? 'end'         : 'start';
     const loy=resolveLabel(port,x,y,activeBadgeBBs);
     lg.appendChild(mk('rect',{x:rx,y:y-fs+loy,width:lw,height:fs+5,rx:2,fill:rgbaOf(C.navy900,C.labelBgAlpha)}));
-    const lb=mk('text',{x:tx,y:y+3.5+loy,'text-anchor':ta,'font-family':C.fontBold,'font-size':fs,'font-weight':fw,fill:`rgba(255,255,255,${active?1:isCon?.9:.72})`});
+    const lb=mk('text',{x:tx,y:y+3.5+loy,'text-anchor':ta,'font-family':C.fontBold,'font-size':fs,'font-weight':fw,fill:C.isLight ? C.textPrimary : `rgba(255,255,255,${active?1:isCon?.9:.72})`});
     lb.textContent=port.name;
     lg.appendChild(lb);
     g.appendChild(lg);
