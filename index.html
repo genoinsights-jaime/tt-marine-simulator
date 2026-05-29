@@ -764,6 +764,7 @@ const PALETTES = {
     '--color-badge-text': '#001237',
     '--color-overlay-rgb': '0, 18, 55',
     '--color-role-subtitle': '#177AA3',
+    '--color-divider': '#28AAE0',
     '--label-bg-alpha': '0.85',
   },
   a: { name:'Propuesta A (Marítimo + tierra)',
@@ -797,6 +798,7 @@ const PALETTES = {
     '--color-badge-text': '#000A1F',
     '--color-overlay-rgb': '0, 10, 31',
     '--color-role-subtitle': '#05DBF2',
+    '--color-divider': '#0DAFEE',
     '--label-bg-alpha': '0.85',
   },
   c: { name:'Propuesta C (Azules + verde agua)',
@@ -813,6 +815,7 @@ const PALETTES = {
     '--color-badge-text': '#001237',
     '--color-overlay-rgb': '0, 18, 55',
     '--color-role-subtitle': '#58E6DB',
+    '--color-divider': '#58E6DB',
     '--label-bg-alpha': '0',
   },
   d: { name:'Propuesta D (Azul + naranja)',
@@ -829,6 +832,7 @@ const PALETTES = {
     '--color-badge-text': '#021F59',
     '--color-overlay-rgb': '2, 31, 89',
     '--color-role-subtitle': '#F98513',
+    '--color-divider': '#F98513',
     '--label-bg-alpha': '0.85',
   },
   e: { name:'Propuesta E (Petróleo + lima)',
@@ -845,6 +849,7 @@ const PALETTES = {
     '--color-badge-text': '#002333',
     '--color-overlay-rgb': '0, 35, 51',
     '--color-role-subtitle': '#DDFE55',
+    '--color-divider': '#DDFE55',
     '--label-bg-alpha': '0',
   },
 };
@@ -881,6 +886,7 @@ const PALETTES_LIGHT = {
     '--color-badge-text': '#FFFFFF',
     '--color-overlay-rgb': '240, 242, 247',
     '--color-role-subtitle': '#0899AA',
+    '--color-divider': '#0A8EC0',
     '--label-bg-alpha': '0.90',
   },
   c: {
@@ -897,6 +903,7 @@ const PALETTES_LIGHT = {
     '--color-badge-text': '#FFFFFF',
     '--color-overlay-rgb': '240, 243, 247',
     '--color-role-subtitle': '#2DBAB0',
+    '--color-divider': '#2DBAB0',
     '--label-bg-alpha': '0.90',
   },
   d: {
@@ -913,6 +920,7 @@ const PALETTES_LIGHT = {
     '--color-badge-text': '#FFFFFF',
     '--color-overlay-rgb': '242, 243, 247',
     '--color-role-subtitle': '#E07010',
+    '--color-divider': '#E07010',
     '--label-bg-alpha': '0.90',
   },
   e: {
@@ -929,6 +937,7 @@ const PALETTES_LIGHT = {
     '--color-badge-text': '#FFFFFF',
     '--color-overlay-rgb': '240, 244, 247',
     '--color-role-subtitle': '#7DA000',
+    '--color-divider': '#7DA000',
     '--label-bg-alpha': '0.90',
   },
 };
@@ -1637,6 +1646,7 @@ function fillSels(l){
     initPending = true;
     requestAnimationFrame(()=>{
       try {
+        C = readColors();
         fillSels('en');
         setLang('en');
         initMap();
@@ -1656,9 +1666,12 @@ function fillSels(l){
     }
   }
 
-  // Watch for slide 7 becoming visible
+  // Watch for slide 7 becoming visible — refresh colors each time
   if (slide7) {
-    new MutationObserver(tryInitMap).observe(slide7, { attributes:true, attributeFilter:['class'] });
+    new MutationObserver(() => {
+      if (!slide7.classList.contains('active')) return;
+      if (mapInitialized) { refreshMapIfActive(); } else { tryInitMap(); }
+    }).observe(slide7, { attributes:true, attributeFilter:['class'] });
   }
 
   // Resize: only if slide 7 is active and already initialized
