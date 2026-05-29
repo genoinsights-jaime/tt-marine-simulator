@@ -701,21 +701,35 @@ resetHide();
   </select>
   <div class="swatch-row" id="palette-swatches"></div>
 
-  <label for="font-primary">Tipografía principal</label>
-  <select id="font-primary">
-    <option value="montserrat">Montserrat</option>
-    <option value="mozilla">Mozilla Headline</option>
-    <option value="gothic">Special Gothic Condensed</option>
-    <option value="sulphur">Sulphur Point</option>
-  </select>
-
-  <label for="font-secondary">Tipografía secundaria</label>
-  <select id="font-secondary">
-    <option value="raleway">Raleway</option>
-    <option value="roboto">Roboto</option>
-    <option value="dmsans">DM Sans</option>
-    <option value="inter">Inter</option>
-  </select>
+  <label>Tipografías</label>
+  <div style="display:flex;gap:8px;margin-bottom:10px;">
+    <button id="font-tab-combo" class="mode-btn active" type="button">Combos</button>
+    <button id="font-tab-manual" class="mode-btn" type="button">Manual</button>
+  </div>
+  <div id="font-combo-view">
+    <select id="font-combo">
+      <option value="montserrat+raleway">Montserrat + Raleway</option>
+      <option value="mozilla+roboto">Mozilla Headline + Roboto</option>
+      <option value="gothic+dmsans">Special Gothic + DM Sans</option>
+      <option value="sulphur+inter">Sulphur Point + Inter</option>
+    </select>
+  </div>
+  <div id="font-manual-view" style="display:none;">
+    <label for="font-primary" style="margin-top:0;">Tipografía principal</label>
+    <select id="font-primary">
+      <option value="montserrat">Montserrat</option>
+      <option value="mozilla">Mozilla Headline</option>
+      <option value="gothic">Special Gothic Condensed</option>
+      <option value="sulphur">Sulphur Point</option>
+    </select>
+    <label for="font-secondary">Tipografía secundaria</label>
+    <select id="font-secondary">
+      <option value="raleway">Raleway</option>
+      <option value="roboto">Roboto</option>
+      <option value="dmsans">DM Sans</option>
+      <option value="inter">Inter</option>
+    </select>
+  </div>
 
   <div id="invert-row" style="display:none;margin:0 0 16px 0;">
     <label style="margin-bottom:6px;">Modo de fondo</label>
@@ -985,6 +999,19 @@ function renderSwatches(palette) {
   cont.innerHTML = keys.map(k => `<div class="swatch" title="${k}: ${palette[k]}" style="background:${palette[k]}"></div>`).join('');
 }
 
+// ===== Font combo mapping =====
+const FONT_COMBOS = {
+  'montserrat+raleway': { primary: 'montserrat', secondary: 'raleway' },
+  'mozilla+roboto':     { primary: 'mozilla',    secondary: 'roboto' },
+  'gothic+dmsans':      { primary: 'gothic',     secondary: 'dmsans' },
+  'sulphur+inter':      { primary: 'sulphur',    secondary: 'inter' },
+};
+
+function comboKeyFromFonts(pri, sec) {
+  const key = pri + '+' + sec;
+  return FONT_COMBOS[key] ? key : null;
+}
+
 // ===== Wire up UI =====
 window.addEventListener('DOMContentLoaded', () => {
   const toggle = document.getElementById('customizer-toggle');
@@ -993,6 +1020,11 @@ window.addEventListener('DOMContentLoaded', () => {
   const pSel = document.getElementById('palette-select');
   const fPri = document.getElementById('font-primary');
   const fSec = document.getElementById('font-secondary');
+  const fCombo = document.getElementById('font-combo');
+  const comboView = document.getElementById('font-combo-view');
+  const manualView = document.getElementById('font-manual-view');
+  const tabCombo = document.getElementById('font-tab-combo');
+  const tabManual = document.getElementById('font-tab-manual');
   const restoreBtn = document.getElementById('restore-original');
 
   toggle.addEventListener('click', () => {
@@ -1006,6 +1038,30 @@ window.addEventListener('DOMContentLoaded', () => {
   const modeDark = document.getElementById('mode-dark');
   const modeLight = document.getElementById('mode-light');
 
+  // Font tabs
+  tabCombo.addEventListener('click', () => {
+    tabCombo.classList.add('active'); tabManual.classList.remove('active');
+    comboView.style.display = 'block'; manualView.style.display = 'none';
+    // Sync combo dropdown to current manual selections if matching
+    const ck = comboKeyFromFonts(fPri.value, fSec.value);
+    if (ck) fCombo.value = ck;
+    localStorage.setItem('tt-font-mode', 'combo');
+  });
+  tabManual.addEventListener('click', () => {
+    tabManual.classList.add('active'); tabCombo.classList.remove('active');
+    manualView.style.display = 'block'; comboView.style.display = 'none';
+    localStorage.setItem('tt-font-mode', 'manual');
+  });
+
+  // Combo select
+  fCombo.addEventListener('change', e => {
+    const c = FONT_COMBOS[e.target.value];
+    if (c) {
+      fPri.value = c.primary; fSec.value = c.secondary;
+      applyPrimaryFont(c.primary); applySecondaryFont(c.secondary);
+    }
+  });
+
   pSel.addEventListener('change', e => applyPalette(e.target.value));
   fPri.addEventListener('change', e => applyPrimaryFont(e.target.value));
   fSec.addEventListener('change', e => applySecondaryFont(e.target.value));
@@ -1013,7 +1069,12 @@ window.addEventListener('DOMContentLoaded', () => {
   modeLight.addEventListener('click', () => { _lightMode = true; applyPalette(pSel.value); });
   restoreBtn.addEventListener('click', () => {
     pSel.value = 'original'; fPri.value = 'montserrat'; fSec.value = 'raleway';
+    fCombo.value = 'montserrat+raleway';
     _lightMode = false;
+    // Reset to combo tab
+    tabCombo.classList.add('active'); tabManual.classList.remove('active');
+    comboView.style.display = 'block'; manualView.style.display = 'none';
+    localStorage.setItem('tt-font-mode', 'combo');
     applyPalette('original'); applyPrimaryFont('montserrat'); applySecondaryFont('raleway');
   });
 
@@ -1022,8 +1083,16 @@ window.addEventListener('DOMContentLoaded', () => {
   const savedFP = localStorage.getItem('tt-font-primary') || 'montserrat';
   const savedFS = localStorage.getItem('tt-font-secondary') || 'raleway';
   const savedMode = localStorage.getItem('tt-mode') || 'dark';
+  const savedFontMode = localStorage.getItem('tt-font-mode') || 'combo';
   _lightMode = savedMode === 'light';
   pSel.value = savedP; fPri.value = savedFP; fSec.value = savedFS;
+  // Restore font tab state
+  const ck = comboKeyFromFonts(savedFP, savedFS);
+  if (ck) fCombo.value = ck;
+  if (savedFontMode === 'manual') {
+    tabManual.classList.add('active'); tabCombo.classList.remove('active');
+    manualView.style.display = 'block'; comboView.style.display = 'none';
+  }
   applyPalette(savedP); applyPrimaryFont(savedFP); applySecondaryFont(savedFS);
 });
 </script>
