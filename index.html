@@ -1181,6 +1181,10 @@ function toggleMapRender() {
     img.style.display = 'none';
     app.style.display = '';
     btn.textContent = 'Render Map';
+    // Re-init map canvas after unhiding
+    if (typeof readColors === 'function' && typeof initMap === 'function') {
+      requestAnimationFrame(() => { C = readColors(); initMap(); });
+    }
   } else {
     app.style.display = 'none';
     img.style.display = '';
