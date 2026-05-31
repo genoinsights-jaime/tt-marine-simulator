@@ -517,65 +517,8 @@ html[data-mode="light"] #rbtn:hover{color:#fff;}
 <div class="pic-wrap" style="position:absolute;left:1176.09px;top:0.00px;width:743.76px;height:1080.00px;overflow:hidden;"><img class="pic" src="assets/image8.png" style="position:absolute;left:-36.74px;top:-100.44px;width:821.41px;height:1216.08px;max-width:none;max-height:none;display:block;" alt=""></div>
 </div>
 <div class="slide" data-n="7" style="">
-<!-- Interactive Transit Times map -->
-<div id="app">
-  <canvas id="mc"></canvas>
-  <div id="tint"></div>
-  <svg id="svgl"></svg>
-
-  <div id="title">
-    <div class="t-eyebrow">T&amp;T MARINE MARITIME AGENCY</div>
-    <div class="t-h1" id="tl1">TRANSIT TIMES &amp;</div>
-    <div class="t-h1" id="tl2">DISTANCES</div>
-  </div>
-
-
-  <div id="panel">
-    <div id="panel-title">REFERENCE DATA</div>
-    <div id="tabs">
-      <button class="tab on" id="t0" onclick="sm('explore')">Explore</button>
-      <button class="tab"    id="t1" onclick="sm('route')">Route</button>
-    </div>
-    <div id="pcont">
-      <div id="emode">
-        <div class="shdr">Transit Times · From Recalada</div>
-        <div class="rrow"><span class="rto">Zona Común</span><span class="rt">8–10 hrs</span></div>
-        <div class="rrow"><span class="rto">Buenos Aires / Dock Sud</span><span class="rt">11–13 hrs</span></div>
-        <div class="rrow"><span class="rto">Campana / Zárate</span><span class="rt">16–18 hrs</span></div>
-        <div class="rrow"><span class="rto">Nueva Palmira</span><span class="rt">18 hrs</span></div>
-        <div class="rrow"><span class="rto">San Nicolás / Ramallo / V. Constitución</span><span class="rt">24–28 hrs</span></div>
-        <div class="rrow"><span class="rto">Rosario / San Lorenzo</span><span class="rt">28–34 hrs</span></div>
-        <div class="rrow"><span class="rto">Necochea</span><span class="rt">24–30 hrs</span></div>
-        <div class="rrow"><span class="rto">Bahía Blanca</span><span class="rt">42–48 hrs</span></div>
-        <div class="shdr">Distances · From Recalada</div>
-        <div class="drow"><span class="dto">Zona Común</span><span class="dval">187 Km / 101 NM</span></div>
-        <div class="drow"><span class="dto">Buenos Aires / Dock Sud</span><span class="dval">239 Km / 129 NM</span></div>
-        <div class="drow"><span class="dto">Campana / Zárate</span><span class="dval">308 Km / 166 NM</span></div>
-        <div class="drow"><span class="dto">Nueva Palmira</span><span class="dval">314 Km / 170 NM</span></div>
-        <div class="drow"><span class="dto">San Nicolás / Ramallo / V. Constitución</span><span class="dval">531 Km / 287 NM</span></div>
-        <div class="drow"><span class="dto">Rosario / San Lorenzo</span><span class="dval">633 Km / 342 NM</span></div>
-        <div class="drow"><span class="dto">Necochea</span><span class="dval">648 Km / 350 NM</span></div>
-        <div class="drow"><span class="dto">Bahía Blanca</span><span class="dval">889 Km / 480 NM</span></div>
-      </div>
-      <div id="rmode">
-        <span class="rlbl" id="lf">FROM</span>
-        <select class="rsel" id="rf"></select>
-        <span class="rlbl" id="lt">TO</span>
-        <select class="rsel" id="rt2"></select>
-        <button id="rbtn" onclick="sr()">Show Route</button>
-        <div id="rresult"></div>
-      </div>
-    </div>
-  </div>
-
-
-  <div id="leg">
-    <div class="lhdr" id="lh">Legend</div>
-    <div class="lrow"><svg width="14" height="14"><circle cx="7" cy="7" r="5.5" fill="#28AAE0" opacity=".9"/><circle cx="7" cy="7" r="2.2" fill="white"/></svg><span class="llbl" id="ll1">Port</span></div>
-    <div class="lrow"><svg width="22" height="9"><line x1="0" y1="4.5" x2="22" y2="4.5" stroke="#28AAE0" stroke-width="1.5" stroke-dasharray="5,3"/></svg><span class="llbl" id="ll3">Active route</span></div>
-
-  </div>
-</div>
+<!-- Static Transit Times map — swapped per palette -->
+<img id="map-img" src="assets/map-original.png" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" alt="Transit Times & Distances Map">
 </div>
 <div class="slide" data-n="8" style="background:var(--color-bg-primary);">
 <div class="shape" style="position:absolute;left:100.80px;top:172.80px;width:72.00px;height:5.76px;box-sizing:border-box;background:var(--color-accent-tertiary);box-shadow:0.00px 3.62px 6.30px rgba(0,0,0,0.349)"><div class="txbox" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7.2px 14.4px 7.2px 14.4px;overflow:hidden"><p style="text-align:center;margin:0;line-height:1.000"><span style=""></span></p></div></div>
@@ -1037,6 +980,10 @@ function applyPalette(key, lightOverride) {
     dBtn.classList.toggle('active', !isLight);
     lBtn.classList.toggle('active', isLight);
   }
+  // Swap static map image per palette
+  const MAP_IMAGES = { original:'map-original.png', a:'map-a.png', b:'map-b.png', c:'map-c.png', d:'map-d.png', e:'map-original.png' };
+  const mapImg = document.getElementById('map-img');
+  if (mapImg) mapImg.src = 'assets/' + (MAP_IMAGES[key] || MAP_IMAGES.original);
 }
 
 function applyPrimaryFont(key) {
@@ -1171,7 +1118,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 <script>
-
+// ── Map JS disabled: slide 7 now uses static images per palette ──
+if (false) {
 // Colors read from CSS vars so palette swaps propagate to canvas/SVG
 function readColors(){
   const cs=getComputedStyle(document.documentElement);
@@ -1769,6 +1717,7 @@ function fillSels(l){
     tryInitMap();
   });
 })();
+} // end disabled map JS
 </script>
 </body>
 </html>
