@@ -981,7 +981,7 @@ function applyPalette(key, lightOverride) {
     lBtn.classList.toggle('active', isLight);
   }
   // Swap static map image per palette
-  const MAP_IMAGES = { original:'map-original.png', a:'map-a.png', b:'map-b.png', c:'map-c.png', d:'map-d.png', e:'map-original.png' };
+  const MAP_IMAGES = { original:'map-original.png', a:'map-a.png', b:'map-b.png', c:'map-c.png', d:'map-d.png', e:'map-e.png' };
   const mapImg = document.getElementById('map-img');
   if (mapImg) mapImg.src = 'assets/' + (MAP_IMAGES[key] || MAP_IMAGES.original);
 }
